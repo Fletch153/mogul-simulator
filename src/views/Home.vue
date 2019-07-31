@@ -1,18 +1,33 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div class="home container">
+    <div class="row justify-content-center">
+      <div class="col-2">
+        <img id="center-logo" alt="Vue logo" src="../assets/mogul-logo.svg" />
+      </div>
+    </div>
+    <hr />
+    <div class="row justify-content-center">
+      <div class="col">
+        <Simulator />
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import Vue from "vue";
+import Simulator from "@/components/Simulator.vue"; // @ is an alias to /src
 
 export default Vue.extend({
-  name: 'home',
+  name: "home",
   components: {
-    HelloWorld,
-  },
+    Simulator
+  }
 });
 </script>
+<style scoped lang="less">
+#center-logo {
+  margin-left: 65px;
+}
+</style>
+
