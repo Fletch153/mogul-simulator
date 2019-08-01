@@ -1,164 +1,184 @@
 <template>
   <div class="row justify-content-center">
-    <div class="col-12 simulator position-sticky fixed-top">
+    <div class="col-7 simulator">
       <div class="row">
-        <div class="col-12 text-center">
-          <h1>Simulation Details</h1>
-        </div>
         <div class="col-12">
-          <h4>Current Prices</h4>
-        </div>
-        <div class="col-6">
-          Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
-          <small
-            class="form-text text-muted"
-          >How much MGL you are getting per 1 USD invested</small>
-        </div>
-        <div class="col-6">
-          Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
-          <small
-            class="form-text text-muted"
-          >How much MGL you should send to receive 1 USD</small>
-        </div>
-        <div class="col-6">
-          Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
-          <small
-            class="form-text text-muted"
-          >How much USD you need to send to receive 1 MGL</small>
-        </div>
-        <div class="col-6">
-          Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
-          <small
-            class="form-text text-muted"
-          >How much USD you are going to receive for the next 1 MGL sold</small>
-        </div>
-        <div class="col-12">
-          <hr />
-        </div>
-        <div class="col-12">
-          <h4>Prices Charts</h4>
-        </div>
-        <div class="col-12 chart-div">
-          <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
-        </div>
-        <div class="col-12">
-          <hr />
-        </div>
-        <div class="col-12">
-          <h4>Simulation details</h4>
-        </div>
-        <div class="col-2">Reserve ratio: {{reserveRatio}}%</div>
-        <div class="col-3">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
-        <div class="col-3">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
-        <div class="col-3">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
-        <div class="col-12">
-          <hr />
+          <div class="row">
+            <div class="col-12">
+              <h1>Simulation</h1>
+              <hr />
+              <h4>Prices</h4>
+            </div>
+            <div class="col-3">
+              Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
+              <small
+                class="form-text text-muted"
+              >How much MGL you are getting per 1 USD invested</small>
+            </div>
+            <div class="col-3">
+              Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
+              <small
+                class="form-text text-muted"
+              >How much MGL you should send to receive 1 USD</small>
+            </div>
+            <div class="col-3">
+              Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
+              <small
+                class="form-text text-muted"
+              >How much USD you need to send to receive 1 MGL</small>
+            </div>
+            <div class="col-3">
+              Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
+              <small
+                class="form-text text-muted"
+              >How much USD you are going to receive for the next 1 MGL sold</small>
+            </div>
+            <div class="col-12">
+              <hr />
+            </div>
+            <div class="col-12">
+              <h4>Prices Charts</h4>
+            </div>
+            <div class="col-12 chart-div">
+              <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
+            </div>
+            <div class="col-12">
+              <hr />
+            </div>
+            <div class="col-12">
+              <h4>Simulation details</h4>
+            </div>
+            <div class="col-2">Reserve ratio: {{reserveRatio}}%</div>
+            <div class="col-3">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
+            <div class="col-3">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
+            <div class="col-3">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+            <br />
+            <br />
+          </div>
         </div>
       </div>
     </div>
-    <div class="col-12">
-      <h1>Actions</h1>
-      <hr />
+    <div class="col-5 simulator">
       <div class="row">
-        <div class="col-4 right-separator">
-          <h4>Initial investment</h4>
-          <div class="form-group">
-            <label for="premintedMGL">Preminted MGL</label>
-            <input type="text" class="form-control col-6" id="premintedMGL" v-model="premintedMGL" />
-            <small
-              id="premintedMGLHelp"
-              class="form-text text-muted"
-            >How much MGL you want to premint</small>
-          </div>
-          <div class="form-group">
-            <label for="initialDAIInvestment">Initial DAI Investment</label>
-            <input
-              type="text"
-              class="form-control col-6"
-              id="initialDAIInvestment"
-              v-model="initialDAIInvestment"
-            />
-            <small
-              id="initialDAIInvestmentHelp"
-              class="form-text text-muted"
-            >How much DAI you will invest in the beginning</small>
-          </div>
-          <div class="form-group">
-            <label for="reserveRatio">Reserve Ratio (%)</label>
-            <input type="text" class="form-control col-3" id="reserveRatio" v-model="reserveRatio" />
-            <small
-              id="reserveRatioHelp"
-              class="form-text text-muted"
-            >What % of each investment goes to the reserve</small>
-          </div>
+        <div class="col-12">
+          <h1>Actions</h1>
+          <div class="row">
+            <div class="col-4 right-separator">
+              <h4>Initial investment</h4>
+              <div class="form-group">
+                <label for="premintedMGL">Preminted MGL</label>
+                <input
+                  type="text"
+                  class="form-control col-6"
+                  id="premintedMGL"
+                  v-model="premintedMGL"
+                />
+                <small
+                  id="premintedMGLHelp"
+                  class="form-text text-muted"
+                >How much MGL you want to premint</small>
+              </div>
+              <div class="form-group">
+                <label for="initialDAIInvestment">Initial DAI Investment</label>
+                <input
+                  type="text"
+                  class="form-control col-6"
+                  id="initialDAIInvestment"
+                  v-model="initialDAIInvestment"
+                />
+                <small
+                  id="initialDAIInvestmentHelp"
+                  class="form-text text-muted"
+                >How much DAI you will invest in the beginning</small>
+              </div>
+              <div class="form-group">
+                <label for="reserveRatio">Reserve Ratio (%)</label>
+                <input
+                  type="text"
+                  class="form-control col-3"
+                  id="reserveRatio"
+                  v-model="reserveRatio"
+                />
+                <small
+                  id="reserveRatioHelp"
+                  class="form-text text-muted"
+                >What % of each investment goes to the reserve</small>
+              </div>
 
-          <input type="button" class="btn btn-primary" value="Start" @click="start" />
-        </div>
-        <div class="col-4 right-separator"></div>
-        <div class="col-4 right-separator">
-          <h4>Reset Simulation</h4>
-          <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
-        </div>
-      </div>
-    </div>
-    <div class="col-12">
-      <hr />
-    </div>
-    <div class="col-12">
-      <div class="row">
-        <div class="col-4 right-separator">
-          <h4>Invest</h4>
-          <div class="form-group">
-            <label for="daiInvestment">USD</label>
-            <input
-              type="text"
-              class="form-control col-6"
-              id="daiInvestment"
-              v-model="daiInvestment"
-            />
-            <small
-              id="daiInvestmentHelp"
-              class="form-text text-muted"
-            >How much USD you want to invest</small>
+              <input type="button" class="btn btn-primary" value="Start" @click="start" />
+            </div>
+            <div class="col-4 right-separator"></div>
+            <div class="col-4 right-separator">
+              <h4>Reset Simulation</h4>
+              <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
+            </div>
           </div>
+        </div>
+        <div class="col-12">
+          <hr />
+        </div>
+        <div class="col-12">
+          <div class="row">
+            <div class="col-4 right-separator">
+              <h4>Invest</h4>
+              <div class="form-group">
+                <label for="daiInvestment">USD</label>
+                <input
+                  type="text"
+                  class="form-control col-6"
+                  id="daiInvestment"
+                  v-model="daiInvestment"
+                />
+                <small
+                  id="daiInvestmentHelp"
+                  class="form-text text-muted"
+                >How much USD you want to invest</small>
+              </div>
 
-          <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
-        </div>
-        <div class="col-4 right-separator">
-          <h4>Sell</h4>
-          <div class="form-group">
-            <label for="mglSold">MGL</label>
-            <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
-            <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
-          </div>
+              <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
+            </div>
+            <div class="col-4 right-separator">
+              <h4>Sell</h4>
+              <div class="form-group">
+                <label for="mglSold">MGL</label>
+                <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
+                <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
+              </div>
 
-          <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
-        </div>
-        <div class="col-4 right-separator">
-          <h4>Pay Dividend</h4>
-          <div class="form-group">
-            <label for="dividendPaid">USD</label>
-            <input type="text" class="form-control col-6" id="dividendPaid" v-model="dividendPaid" />
-            <small
-              id="dividendPaidHelp"
-              class="form-text text-muted"
-            >How much USD you want to pay as dividend</small>
-          </div>
-          <div class="form-group">
-            <label for="dividendRatio">Percent to Reserve (%)</label>
-            <input
-              type="text"
-              class="form-control col-3"
-              id="dividendRatio"
-              v-model="dividendRatio"
-            />
-            <small
-              id="dividendRatioHelp"
-              class="form-text text-muted"
-            >What percent do you want to go to the reserve</small>
-          </div>
+              <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
+            </div>
+            <div class="col-4 right-separator">
+              <h4>Pay Dividend</h4>
+              <div class="form-group">
+                <label for="dividendPaid">USD</label>
+                <input
+                  type="text"
+                  class="form-control col-6"
+                  id="dividendPaid"
+                  v-model="dividendPaid"
+                />
+                <small
+                  id="dividendPaidHelp"
+                  class="form-text text-muted"
+                >How much USD you want to pay as dividend</small>
+              </div>
+              <div class="form-group">
+                <label for="dividendRatio">Percent to Reserve (%)</label>
+                <input
+                  type="text"
+                  class="form-control col-3"
+                  id="dividendRatio"
+                  v-model="dividendRatio"
+                />
+                <small
+                  id="dividendRatioHelp"
+                  class="form-text text-muted"
+                >What percent do you want to go to the reserve</small>
+              </div>
 
-          <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+              <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -415,6 +435,7 @@ export default Vue.extend({
   .box-shadow(0 0 5px 2px rgba(0, 0, 0, 0.2));
 }
 .right-separator {
-  border-right: 1px solid lightgray;
+  border: 1px solid lightgray;
+  padding: 10px;
 }
 </style>

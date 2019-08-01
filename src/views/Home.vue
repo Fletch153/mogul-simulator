@@ -1,11 +1,5 @@
 <template>
-  <div class="home container">
-    <div class="row justify-content-center">
-      <div class="col-2">
-        <img id="center-logo" alt="Vue logo" src="../assets/mogul-logo.svg" />
-      </div>
-    </div>
-    <hr />
+  <div class="home container-fluid">
     <div class="row justify-content-center">
       <div class="col">
         <Simulator />
