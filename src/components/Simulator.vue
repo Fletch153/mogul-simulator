@@ -1,62 +1,157 @@
 <template>
   <div class="row justify-content-center">
-    <div class="col-12 text-center">
-      <h1>{{ title }}</h1>
-    </div>
-    <div class="col-12">
-      <h4>Current Prices</h4>
-    </div>
-    <div class="col-6">
-      Buy Price (MGL/1 DAI): {{HRBuyMGLPerDAI}} MGL
-      <small
-        class="form-text text-muted"
-      >How much MGL you are getting per 1 DAI invested</small>
-    </div>
-    <div class="col-6">
-      Sell Price (DAI/ 1 MGL): {{ HRDAIPerMGL }} DAI
-      <small
-        class="form-text text-muted"
-      >How much DAI you are receiving per 1 MGL Sold</small>
-    </div>
-    <div class="col-12">
-      <hr />
-    </div>
-    <div class="col-12">
-      <h4>Simulation totals</h4>
-    </div>
-    <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
-    <div class="col-6">DAI invested: {{HRTotalDAI.toLocaleString()}}</div>
-    <div class="col-12">
-      <hr />
-    </div>
-    <div class="col-12">
-      <div class="form-group">
-        <label for="premintedMGL">Preminted MGL</label>
-        <input type="text" class="form-control col-3" id="premintedMGL" v-model="premintedMGL" />
-        <small id="premintedMGLHelp" class="form-text text-muted">How much MGL you want to premint</small>
+    <div class="col-12 simulator position-sticky fixed-top">
+      <div class="row">
+        <div class="col-12 text-center">
+          <h1>Simulation Details</h1>
+        </div>
+        <div class="col-12">
+          <h4>Current Prices</h4>
+        </div>
+        <div class="col-6">
+          Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
+          <small
+            class="form-text text-muted"
+          >How much MGL you are getting per 1 USD invested</small>
+        </div>
+        <div class="col-6">
+          Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
+          <small
+            class="form-text text-muted"
+          >How much MGL you should send to receive 1 USD</small>
+        </div>
+        <div class="col-6">
+          Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
+          <small
+            class="form-text text-muted"
+          >How much USD you need to send to receive 1 MGL</small>
+        </div>
+        <div class="col-6">
+          Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
+          <small
+            class="form-text text-muted"
+          >How much USD you are going to receive for the next 1 MGL sold</small>
+        </div>
+        <div class="col-12">
+          <hr />
+        </div>
+        <div class="col-12">
+          <h4>Simulation details</h4>
+        </div>
+        <div class="col-2">Reserve ratio: {{reserveRatio}}%</div>
+        <div class="col-3">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
+        <div class="col-3">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
+        <div class="col-3">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+        <div class="col-12">
+          <hr />
+        </div>
       </div>
-      <div class="form-group">
-        <label for="initialDAIInvestment">Initial DAI Investment</label>
-        <input
-          type="text"
-          class="form-control col-3"
-          id="initialDAIInvestment"
-          v-model="initialDAIInvestment"
-        />
-        <small
-          id="initialDAIInvestmentHelp"
-          class="form-text text-muted"
-        >How much DAI you will invest in the beginning</small>
+    </div>
+    <div class="col-12">
+      <h1>Actions</h1>
+      <hr />
+      <div class="row">
+        <div class="col-4 right-separator">
+          <h4>Initial investment</h4>
+          <div class="form-group">
+            <label for="premintedMGL">Preminted MGL</label>
+            <input type="text" class="form-control col-6" id="premintedMGL" v-model="premintedMGL" />
+            <small
+              id="premintedMGLHelp"
+              class="form-text text-muted"
+            >How much MGL you want to premint</small>
+          </div>
+          <div class="form-group">
+            <label for="initialDAIInvestment">Initial DAI Investment</label>
+            <input
+              type="text"
+              class="form-control col-6"
+              id="initialDAIInvestment"
+              v-model="initialDAIInvestment"
+            />
+            <small
+              id="initialDAIInvestmentHelp"
+              class="form-text text-muted"
+            >How much DAI you will invest in the beginning</small>
+          </div>
+          <div class="form-group">
+            <label for="reserveRatio">Reserve Ratio (%)</label>
+            <input type="text" class="form-control col-3" id="reserveRatio" v-model="reserveRatio" />
+            <small
+              id="reserveRatioHelp"
+              class="form-text text-muted"
+            >What % of each investment goes to the reserve</small>
+          </div>
+
+          <input type="button" class="btn btn-primary" value="Start" @click="start" />
+        </div>
+        <div class="col-4 right-separator"></div>
+        <div class="col-4 right-separator">
+          <h4>Reset Simulation</h4>
+          <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
+        </div>
       </div>
-
-      <input type="button" class="btn btn-primary" value="Start" @click="start" />
-
+    </div>
+    <div class="col-12">
       <hr />
     </div>
     <div class="col-12">
-      <h4>Reset Simulation</h4>
-      <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
-      <hr />
+      <div class="row">
+        <div class="col-4 right-separator">
+          <h4>Invest</h4>
+          <div class="form-group">
+            <label for="daiInvestment">USD</label>
+            <input
+              type="text"
+              class="form-control col-6"
+              id="daiInvestment"
+              v-model="daiInvestment"
+            />
+            <small
+              id="daiInvestmentHelp"
+              class="form-text text-muted"
+            >How much USD you want to invest</small>
+          </div>
+
+          <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
+        </div>
+        <div class="col-4 right-separator">
+          <h4>Sell</h4>
+          <div class="form-group">
+            <label for="mglSold">MGL</label>
+            <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
+            <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
+          </div>
+
+          <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
+        </div>
+        <div class="col-4 right-separator">
+          <h4>Pay Dividend</h4>
+          <div class="form-group">
+            <label for="dividendPaid">USD</label>
+            <input type="text" class="form-control col-6" id="dividendPaid" v-model="dividendPaid" />
+            <small
+              id="dividendPaidHelp"
+              class="form-text text-muted"
+            >How much USD you want to pay as dividend</small>
+          </div>
+          <div class="form-group">
+            <label for="dividendRatio">Percent to Reserve (%)</label>
+            <input
+              type="text"
+              class="form-control col-3"
+              id="dividendRatio"
+              v-model="dividendRatio"
+            />
+            <small
+              id="dividendRatioHelp"
+              class="form-text text-muted"
+            >What percent do you want to go to the reserve</small>
+          </div>
+
+          <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -67,7 +162,7 @@ import Vue from "vue";
 let DAI = 1000000000000000000; // 1 DAI
 let MGL = 1000000000000000000; // 1 MGL
 
-let buyCalc = function buyCalc(
+let buyCalc = function(
   continuousTokenSupply: number,
   totalInvestedDAI: number,
   amount: number
@@ -75,34 +170,68 @@ let buyCalc = function buyCalc(
   return continuousTokenSupply * ((1 + amount / totalInvestedDAI) ** 0.5 - 1);
 };
 
-let sellCalc = function sellCalc(
+let sellCalc = function(
   continuousTokenSupply: number,
   reserveSupply: number,
   tokenAmount: number
 ) {
-  return reserveSupply * (1 - (1 - tokenAmount / continuousTokenSupply) ** 2);
+  const a = 1 - tokenAmount / continuousTokenSupply;
+  const b = 1 - a * a;
+
+  return reserveSupply * b;
 };
 
 export default Vue.extend({
   name: "Simulator",
   data() {
     return {
-      title: "Simulator",
       totalMGL: 0,
       totalDAI: 0,
+      reserveRatio: 20,
       reserveSupply: 0,
       investmentFund: 0,
       premintedMGL: 5000000,
-      initialDAIInvestment: 2500000
+      initialDAIInvestment: 2500000,
+      daiInvestment: 0,
+      mglSold: 0,
+      dividendPaid: 0,
+      dividendRatio: 20
     };
   },
   methods: {
-    // need annotation due to `this` in return type
     start() {
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI;
-      this.reserveSupply = this.totalDAI * 0.2;
-      this.investmentFund = this.totalDAI * 0.8;
+      this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
+      this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
+    },
+
+    invest() {
+      const investment = this.daiInvestment * DAI;
+      const mglMinted = buyCalc(this.totalMGL, this.totalDAI, investment);
+      this.totalDAI += investment;
+      this.reserveSupply += investment * this.reserveRatioDecimal;
+      this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+      this.totalMGL += mglMinted;
+    },
+
+    sell() {
+      const sellAmount = this.mglSold * MGL;
+      const daiReturned = sellCalc(
+        this.totalMGL,
+        this.reserveSupply,
+        sellAmount
+      );
+      this.totalMGL -= sellAmount;
+      this.reserveSupply -= daiReturned;
+      this.totalDAI -= daiReturned;
+    },
+
+    payDividend() {
+      const dividend = this.dividendPaid * DAI;
+      this.totalDAI += dividend;
+      this.reserveSupply += dividend * this.dividendRatioDecimal;
+      this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
     },
 
     reset() {
@@ -112,9 +241,21 @@ export default Vue.extend({
       this.investmentFund = 0;
       this.premintedMGL = 0;
       this.initialDAIInvestment = 0;
+      this.daiInvestment = 0;
+      this.mglSold = 0;
+      this.dividendPaid = 0;
+      this.dividendRatio = 20;
     }
   },
   computed: {
+    reserveRatioDecimal(): number {
+      return this.reserveRatio / 100;
+    },
+
+    dividendRatioDecimal(): number {
+      return this.dividendRatio / 100;
+    },
+
     HRTotalMGL(): number {
       return this.totalMGL / MGL;
     },
@@ -123,23 +264,35 @@ export default Vue.extend({
       return this.totalDAI / DAI;
     },
 
+    HRReserveSupply(): number {
+      return this.reserveSupply / DAI;
+    },
+
     HRBuyMGLPerDAI(): number {
       if (this.totalDAI == 0) {
         return 0;
       }
-      return (
-        (this.totalMGL * ((1 + (1 * DAI) / this.totalDAI) ** 0.5 - 1)) / MGL
-      );
+      return buyCalc(this.totalMGL, this.totalDAI, DAI) / MGL;
     },
 
-    HRDAIPerMGL(): number {
+    HRBuyDAIPerMGL(): number {
+      if (this.totalDAI == 0) {
+        return 0;
+      }
+      return 1 / this.HRBuyMGLPerDAI;
+    },
+
+    HRSellDAIPerMGL(): number {
       if (this.reserveSupply == 0 || this.totalMGL == 0) {
         return 0;
       }
 
-      let DAIPerMGL =
-        (this.reserveSupply * (1 - (1 - (1 * MGL) / this.totalMGL) ** 2)) / DAI;
+      let DAIPerMGL = sellCalc(this.totalMGL, this.reserveSupply, MGL) / DAI;
       return DAIPerMGL;
+    },
+
+    HRSellMGLperDAI(): number {
+      return 1 / this.HRSellDAIPerMGL;
     }
   }
 });
@@ -147,4 +300,19 @@ export default Vue.extend({
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+.box-shadow(...) {
+  -webkit-box-shadow: @arguments;
+  -moz-box-shadow: @arguments;
+  box-shadow: @arguments;
+}
+
+.simulator {
+  border: 1px solid black;
+  background-color: white;
+  margin-bottom: 20px;
+  .box-shadow(0 0 5px 2px rgba(0, 0, 0, 0.2));
+}
+.right-separator {
+  border-right: 1px solid lightgray;
+}
 </style>
