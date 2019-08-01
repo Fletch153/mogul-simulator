@@ -217,7 +217,7 @@ export default Vue.extend({
             {
               ticks: {
                 // Include a dollar sign in the ticks
-                callback: function(value, index, values) {
+                callback: function(value: string, index: any, values: any) {
                   return `${value} MGL/DAI`;
                 }
               }
@@ -227,7 +227,7 @@ export default Vue.extend({
             {
               ticks: {
                 // Include a dollar sign in the ticks
-                callback: function(value, index, values) {
+                callback: function(value: string, index: any, values: any) {
                   return `$${value}`;
                 }
               }
