@@ -36,6 +36,15 @@
           <hr />
         </div>
         <div class="col-12">
+          <h4>Prices Charts</h4>
+        </div>
+        <div class="col-12 chart-div">
+          <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
+        </div>
+        <div class="col-12">
+          <hr />
+        </div>
+        <div class="col-12">
           <h4>Simulation details</h4>
         </div>
         <div class="col-2">Reserve ratio: {{reserveRatio}}%</div>
@@ -158,6 +167,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import CurveChart from "@/components/CurveChart.vue";
 
 let DAI = 1000000000000000000; // 1 DAI
 let MGL = 1000000000000000000; // 1 MGL
@@ -183,6 +193,9 @@ let sellCalc = function(
 
 export default Vue.extend({
   name: "Simulator",
+  components: {
+    CurveChart
+  },
   data() {
     return {
       totalMGL: 0,
@@ -195,7 +208,33 @@ export default Vue.extend({
       daiInvestment: 0,
       mglSold: 0,
       dividendPaid: 0,
-      dividendRatio: 20
+      dividendRatio: 20,
+      chartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                // Include a dollar sign in the ticks
+                callback: function(value, index, values) {
+                  return `${value} MGL/DAI`;
+                }
+              }
+            }
+          ],
+          xAxes: [
+            {
+              ticks: {
+                // Include a dollar sign in the ticks
+                callback: function(value, index, values) {
+                  return `$${value}`;
+                }
+              }
+            }
+          ]
+        }
+      }
     };
   },
   methods: {
@@ -283,16 +322,79 @@ export default Vue.extend({
     },
 
     HRSellDAIPerMGL(): number {
-      if (this.reserveSupply == 0 || this.totalMGL == 0) {
+      if (this.reserveSupply === 0 || this.totalMGL === 0) {
         return 0;
       }
 
-      let DAIPerMGL = sellCalc(this.totalMGL, this.reserveSupply, MGL) / DAI;
+      const DAIPerMGL = sellCalc(this.totalMGL, this.reserveSupply, MGL) / DAI;
       return DAIPerMGL;
     },
 
     HRSellMGLperDAI(): number {
       return 1 / this.HRSellDAIPerMGL;
+    },
+
+    buyCurveData() {
+      if (this.totalDAI == 0) {
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      }
+      const data = [];
+      for (let i = 1; i <= 10; i++) {
+        const investAmount = i * 100000;
+        const mglReceived =
+          buyCalc(this.totalMGL, this.totalDAI, investAmount * DAI) / MGL;
+        data.push(mglReceived / investAmount);
+      }
+      return data;
+    },
+
+    sellCurveData() {
+      if (this.reserveSupply === 0 || this.totalMGL === 0) {
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      }
+      const data = [];
+      for (let i = 1; i <= 10; i++) {
+        const sellAmount = i * 100000;
+        let receivedDai =
+          sellCalc(this.totalMGL, this.reserveSupply, sellAmount * MGL) / DAI;
+        const daiPerMGL = receivedDai / sellAmount;
+        data.push(1 / daiPerMGL);
+      }
+      return data;
+    },
+
+    chartsDataset() {
+      const datasets = {
+        labels: [
+          "100k",
+          "200k",
+          "300k",
+          "400k",
+          "500k",
+          "600k",
+          "700k",
+          "800k",
+          "900k",
+          "1M"
+        ],
+        datasets: [
+          {
+            label: "Buy Curve",
+            data: this.buyCurveData,
+            fill: false,
+            backgroundColor: "rgb(75, 192, 192)",
+            lineTension: 0.1
+          },
+          {
+            label: "Sell Curve",
+            data: this.sellCurveData,
+            fill: false,
+            backgroundColor: "#f87979",
+            lineTension: 0.1
+          }
+        ]
+      };
+      return datasets;
     }
   }
 });
