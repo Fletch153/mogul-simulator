@@ -189,25 +189,25 @@
 import Vue from "vue";
 import CurveChart from "@/components/CurveChart.vue";
 
-let DAI = 1000000000000000000; // 1 DAI
-let MGL = 1000000000000000000; // 1 MGL
+const DAI = 1000000000000000000; // 1 DAI
+const MGL = 1000000000000000000; // 1 MGL
 
-let buyCalc = function(
+const buyCalc = (
   continuousTokenSupply: number,
-  initialInvestment: number,
+  preMintedAmount: number,
   amount: number
-) {
+) => {
   const x1 = continuousTokenSupply ** 2;
-  const x2 = 2 * amount * initialInvestment;
+  const x2 = 2 * amount * preMintedAmount;
   const x3 = (x1 + x2) ** 0.5;
   return x3 - continuousTokenSupply;
 };
 
-let sellCalc = function(
+const sellCalc = (
   continuousTokenSupply: number,
   reserveSupply: number,
   tokenAmount: number
-) {
+) => {
   const a = 1 - tokenAmount / continuousTokenSupply;
   const b = 1 - a * a;
 
@@ -240,7 +240,7 @@ export default Vue.extend({
             {
               ticks: {
                 // Include a dollar sign in the ticks
-                callback: function(value: string, index: any, values: any) {
+                callback: (value: string, index: any, values: any) => {
                   return `$${value}`;
                 }
               }
@@ -250,7 +250,7 @@ export default Vue.extend({
             {
               ticks: {
                 // Include a dollar sign in the ticks
-                callback: function(value: string, index: any, values: any) {
+                callback: (value: string, index: any, values: any) => {
                   return `${value} MGL`;
                 }
               }
@@ -261,14 +261,14 @@ export default Vue.extend({
     };
   },
   methods: {
-    start() {
+    start(): void {
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI;
       this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
       this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
     },
 
-    invest() {
+    invest(): void {
       const investment = this.daiInvestment * DAI;
       const mglMinted = buyCalc(
         this.totalMGL,
@@ -281,7 +281,7 @@ export default Vue.extend({
       this.totalMGL += mglMinted;
     },
 
-    sell() {
+    sell(): void {
       const sellAmount = this.mglSold * MGL;
       const daiReturned = sellCalc(
         this.totalMGL,
@@ -293,14 +293,14 @@ export default Vue.extend({
       this.totalDAI -= daiReturned;
     },
 
-    payDividend() {
+    payDividend(): void {
       const dividend = this.dividendPaid * DAI;
       this.totalDAI += dividend;
       this.reserveSupply += dividend * this.dividendRatioDecimal;
       this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
     },
 
-    reset() {
+    reset(): void {
       this.totalMGL = 0;
       this.totalDAI = 0;
       this.reserveSupply = 0;
@@ -335,14 +335,14 @@ export default Vue.extend({
     },
 
     HRBuyMGLPerDAI(): number {
-      if (this.totalDAI == 0) {
+      if (this.totalMGL === 0) {
         return 0;
       }
       return buyCalc(this.totalMGL, this.premintedMGL * MGL, DAI) / MGL;
     },
 
     HRBuyDAIPerMGL(): number {
-      if (this.totalDAI == 0) {
+      if (this.totalDAI === 0) {
         return 0;
       }
       return 1 / this.HRBuyMGLPerDAI;
@@ -361,8 +361,8 @@ export default Vue.extend({
       return 1 / this.HRSellDAIPerMGL;
     },
 
-    buyCurveData() {
-      if (this.totalDAI == 0) {
+    buyCurveData(): number[] {
+      if (this.totalDAI === 0) {
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
@@ -376,14 +376,14 @@ export default Vue.extend({
       return data;
     },
 
-    sellCurveData() {
+    sellCurveData(): number[] {
       if (this.reserveSupply === 0 || this.totalMGL === 0) {
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
       for (let i = 1; i <= 10; i++) {
         const sellAmount = i * 100000;
-        let receivedDai =
+        const receivedDai =
           sellCalc(this.totalMGL, this.reserveSupply, sellAmount * MGL) / DAI;
         const daiPerMGL = receivedDai / sellAmount;
         data.push(1 / daiPerMGL);
@@ -391,7 +391,7 @@ export default Vue.extend({
       return data;
     },
 
-    chartsDataset() {
+    chartsDataset(): any {
       const datasets = {
         labels: [
           "100k",
