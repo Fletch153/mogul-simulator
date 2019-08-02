@@ -366,12 +366,12 @@ export default Vue.extend({
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
-      for (let i = 1; i <= 10; i++) {
-        const investAmount = i * 100000;
+      for (let i = 0; i <= 10; i++) {
+        const investAmount = 1 + i * 20000000;
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
           MGL;
-        data.push(mglReceived / investAmount);
+        data.push(investAmount / mglReceived);
       }
       return data;
     },
@@ -381,38 +381,48 @@ export default Vue.extend({
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
-      for (let i = 1; i <= 10; i++) {
-        const sellAmount = i * 100000;
-        const receivedDai =
-          sellCalc(this.totalMGL, this.reserveSupply, sellAmount * MGL) / DAI;
-        const daiPerMGL = receivedDai / sellAmount;
-        data.push(1 / daiPerMGL);
+      for (let i = 0; i <= 10; i++) {
+        const sellAmount = 1 + i * 20000000;
+        const mglReceived = buyCalc(
+          this.totalMGL,
+          this.premintedMGL * MGL,
+          sellAmount * DAI
+        );
+        const reserveAddition = sellAmount * DAI * this.reserveRatioDecimal;
+        const receivedDai = sellCalc(
+          this.totalMGL + mglReceived,
+          this.reserveSupply + reserveAddition,
+          mglReceived
+        );
+        const daiPerMGL = receivedDai / mglReceived;
+        data.push(daiPerMGL);
+      }
+      return data;
+    },
+
+    chartLabels(): string[] {
+      const data = [];
+      for (let i = 0; i <= 10; i++) {
+        const investAmount = 1 + i * 20000000;
+        const mglReceived =
+          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
+          MGL;
+        data.push(Math.round(mglReceived).toString());
       }
       return data;
     },
 
     chartsDataset(): any {
       const datasets = {
-        labels: [
-          "100k",
-          "200k",
-          "300k",
-          "400k",
-          "500k",
-          "600k",
-          "700k",
-          "800k",
-          "900k",
-          "1M"
-        ],
+        labels: this.chartLabels,
         datasets: [
-          // {
-          //   label: "Buy Curve",
-          //   data: this.buyCurveData,
-          //   fill: false,
-          //   backgroundColor: "rgb(75, 192, 192)",
-          //   lineTension: 0.1
-          // },
+          {
+            label: "Buy Curve",
+            data: this.buyCurveData,
+            fill: false,
+            backgroundColor: "rgb(75, 192, 192)",
+            lineTension: 0.1
+          },
           {
             label: "Sell Curve",
             data: this.sellCurveData,
