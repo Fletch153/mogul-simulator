@@ -379,7 +379,9 @@ export default Vue.extend({
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
-      for (let i = 0; i <= 10; i++) {
+      data.push(this.initialDAIInvestment / this.premintedMGL);
+      data.push(this.initialDAIInvestment / this.premintedMGL);
+      for (let i = 0; i <= 20; i++) {
         const investAmount = 1 + i * 20000000;
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
@@ -394,7 +396,15 @@ export default Vue.extend({
         return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
-      for (let i = 0; i <= 10; i++) {
+      data.push(
+        (this.initialDAIInvestment / this.premintedMGL) *
+          this.reserveRatioDecimal
+      );
+      data.push(
+        (this.initialDAIInvestment / this.premintedMGL) *
+          this.reserveRatioDecimal
+      );
+      for (let i = 0; i <= 20; i++) {
         const sellAmount = 1 + i * 20000000;
         const mglReceived = buyCalc(
           this.totalMGL,
@@ -415,12 +425,14 @@ export default Vue.extend({
 
     chartLabels(): string[] {
       const data = [];
+      data.push("0");
+      data.push(this.premintedMGL.toString());
       for (let i = 0; i <= 10; i++) {
         const investAmount = 1 + i * 20000000;
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
           MGL;
-        data.push(Math.round(mglReceived).toString());
+        data.push(Math.round(mglReceived + (this.totalMGL/MGL)).toString());
       }
       return data;
     },
@@ -433,14 +445,15 @@ export default Vue.extend({
             label: "Buy Curve",
             data: this.buyCurveData,
             fill: false,
-            backgroundColor: "rgb(75, 192, 192)",
+            borderColor: "rgb(75, 192, 192)",
             lineTension: 0.1
           },
           {
             label: "Sell Curve",
             data: this.sellCurveData,
-            fill: false,
-            backgroundColor: "#f87979",
+            fill: true,
+            borderColor: "#f87979",
+            backgroundColor: "rgba(248,121,121,0.05)",
             lineTension: 0.1
           }
         ]
