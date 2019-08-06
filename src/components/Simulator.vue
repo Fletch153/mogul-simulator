@@ -288,6 +288,14 @@ export default Vue.extend({
         this.reserveSupply,
         sellAmount
       );
+      const r = confirm(
+        `You are about to sell ${this.mglSold} MGL and receive back $${(
+          daiReturned / DAI
+        ).toFixed(2)}. Shall we proceed?`
+      );
+      if (!r) {
+        return;
+      }
       this.totalMGL -= sellAmount;
       this.reserveSupply -= daiReturned;
       this.totalDAI -= daiReturned;
