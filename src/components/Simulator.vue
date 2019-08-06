@@ -48,10 +48,11 @@
             <div class="col-12">
               <h4>Simulation details</h4>
             </div>
-            <div class="col-2">Reserve ratio: {{reserveRatio}}%</div>
-            <div class="col-3">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
-            <div class="col-3">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
-            <div class="col-3">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+            <div class="col-12">Reserve ratio: {{reserveRatio}}%</div>
+            <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
+            <div class="col-6">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
+            <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
+            <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
             <br />
             <br />
           </div>
@@ -340,6 +341,10 @@ export default Vue.extend({
 
     HRReserveSupply(): number {
       return this.reserveSupply / DAI;
+    },
+
+    HRInvestmentFund(): number {
+      return this.investmentFund / DAI;
     },
 
     HRBuyMGLPerDAI(): number {
