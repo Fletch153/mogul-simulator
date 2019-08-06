@@ -276,6 +276,14 @@ export default Vue.extend({
         this.premintedMGL * MGL,
         investment
       );
+      const r = confirm(
+        `You are about to buy ${(mglMinted / MGL).toFixed(
+          2
+        )} MGL. Shall we proceed?`
+      );
+      if (!r) {
+        return;
+      }
       this.totalDAI += investment;
       this.reserveSupply += investment * this.reserveRatioDecimal;
       this.investmentFund += investment * (1 - this.reserveRatioDecimal);
@@ -432,7 +440,7 @@ export default Vue.extend({
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
           MGL;
-        data.push(Math.round(mglReceived + (this.totalMGL/MGL)).toString());
+        data.push(Math.round(mglReceived + this.totalMGL / MGL).toString());
       }
       return data;
     },
