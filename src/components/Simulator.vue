@@ -276,7 +276,9 @@ export default Vue.extend({
       const r = confirm(
         `You are about to buy ${(mglMinted / MGL).toFixed(
           2
-        )} MGL. Shall we proceed?`
+        )} MGL at the price of ${(investment / mglMinted).toFixed(
+          5
+        )}. Shall we proceed?`
       );
       if (!r) {
         return;
@@ -295,9 +297,11 @@ export default Vue.extend({
         sellAmount
       );
       const r = confirm(
-        `You are about to sell ${this.mglSold} MGL and receive back $${(
-          daiReturned / DAI
-        ).toFixed(2)}. Shall we proceed?`
+        `You are about to sell ${this.mglSold} MGL at price ${(
+          daiReturned / sellAmount
+        ).toFixed(5)} and receive back $${(daiReturned / DAI).toFixed(
+          2
+        )}. Shall we proceed?`
       );
       if (!r) {
         return;
@@ -381,13 +385,13 @@ export default Vue.extend({
 
     buyCurveData(): number[] {
       if (this.totalDAI === 0) {
-        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
       data.push(this.initialDAIInvestment / this.premintedMGL);
       data.push(this.initialDAIInvestment / this.premintedMGL);
       for (let i = 0; i <= 20; i++) {
-        const investAmount = 1 + i * 20000000;
+        const investAmount = 1 + i * 10000000;
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
           MGL;
@@ -398,7 +402,7 @@ export default Vue.extend({
 
     sellCurveData(): number[] {
       if (this.reserveSupply === 0 || this.totalMGL === 0) {
-        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
       const data = [];
       data.push(
@@ -410,7 +414,7 @@ export default Vue.extend({
           this.reserveRatioDecimal
       );
       for (let i = 0; i <= 20; i++) {
-        const sellAmount = 1 + i * 20000000;
+        const sellAmount = 1 + i * 10000000;
         const mglReceived = buyCalc(
           this.totalMGL,
           this.premintedMGL * MGL,
@@ -433,7 +437,7 @@ export default Vue.extend({
       data.push("0");
       data.push(this.premintedMGL.toString());
       for (let i = 0; i <= 10; i++) {
-        const investAmount = 1 + i * 20000000;
+        const investAmount = 1 + i * 10000000;
         const mglReceived =
           buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
           MGL;
