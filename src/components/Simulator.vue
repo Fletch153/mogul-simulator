@@ -39,6 +39,11 @@
             <div class="col-12">
               <h4>Prices Charts</h4>
             </div>
+
+            <div class="col-12 chart-div">
+              <CurveChart :chart-data="historyChartDataset" :options="historyChartOptions" />
+            </div>
+
             <div class="col-12 chart-div">
               <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
             </div>
@@ -186,6 +191,7 @@
 <script lang="ts">
 import Vue from "vue";
 import CurveChart from "@/components/CurveChart.vue";
+import numeral from "numeral";
 
 const DAI = 1000000000000000000; // 1 DAI
 const MGL = 1000000000000000000; // 1 MGL
@@ -230,6 +236,9 @@ export default Vue.extend({
       mglSold: 0,
       dividendPaid: 0,
       dividendRatio: 20,
+      historicalEvents: new Array<string>(),
+      historicalSellPrices: new Array<string>(),
+      historicalBuyPrices: new Array<string>(),
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -255,6 +264,22 @@ export default Vue.extend({
             }
           ]
         }
+      },
+      historyChartOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                // Include a dollar sign in the ticks
+                callback: (value: string, index: any, values: any) => {
+                  return `$${value}`;
+                }
+              }
+            }
+          ]
+        }
       }
     };
   },
@@ -264,6 +289,16 @@ export default Vue.extend({
       this.totalDAI = this.initialDAIInvestment * DAI;
       this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
       this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
+
+      this.historicalEvents = new Array<string>();
+      this.historicalSellPrices = new Array<string>();
+      this.historicalBuyPrices = new Array<string>();
+      this.historicalEvents.push(`Before start`);
+      this.historicalSellPrices.push(`0`);
+      this.historicalBuyPrices.push(`0`);
+      this.historicalEvents.push(`Start CORG`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
 
     invest(): void {
@@ -287,6 +322,11 @@ export default Vue.extend({
       this.reserveSupply += investment * this.reserveRatioDecimal;
       this.investmentFund += investment * (1 - this.reserveRatioDecimal);
       this.totalMGL += mglMinted;
+
+      const investmentNumeral = numeral(this.daiInvestment).format("0.0a");
+      this.historicalEvents.push(`Invested $${investmentNumeral}`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
 
     sell(): void {
@@ -309,6 +349,11 @@ export default Vue.extend({
       this.totalMGL -= sellAmount;
       this.reserveSupply -= daiReturned;
       this.totalDAI -= daiReturned;
+
+      const sellNumeral = numeral(this.mglSold).format("0.0a");
+      this.historicalEvents.push(`Sold ${sellNumeral} MGL`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
 
     payDividend(): void {
@@ -316,6 +361,11 @@ export default Vue.extend({
       this.totalDAI += dividend;
       this.reserveSupply += dividend * this.dividendRatioDecimal;
       this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+      const dividendNumeral = numeral(this.dividendPaid).format("0.0a");
+      this.historicalEvents.push(`Dividend $${dividendNumeral}`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
 
     reset(): void {
@@ -329,6 +379,9 @@ export default Vue.extend({
       this.mglSold = 0;
       this.dividendPaid = 0;
       this.dividendRatio = 20;
+      this.historicalEvents = new Array<string>();
+      this.historicalSellPrices = new Array<string>();
+      this.historicalBuyPrices = new Array<string>();
     }
   },
   computed: {
@@ -460,6 +513,30 @@ export default Vue.extend({
           {
             label: "Sell Curve",
             data: this.sellCurveData,
+            fill: true,
+            borderColor: "#f87979",
+            backgroundColor: "rgba(248,121,121,0.05)",
+            lineTension: 0.1
+          }
+        ]
+      };
+      return datasets;
+    },
+
+    historyChartDataset(): any {
+      const datasets = {
+        labels: this.historicalEvents,
+        datasets: [
+          {
+            label: "Buy Curve",
+            data: this.historicalBuyPrices,
+            fill: false,
+            borderColor: "rgb(75, 192, 192)",
+            lineTension: 0.1
+          },
+          {
+            label: "Sell Curve",
+            data: this.historicalSellPrices,
             fill: true,
             borderColor: "#f87979",
             backgroundColor: "rgba(248,121,121,0.05)",
