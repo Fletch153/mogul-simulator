@@ -55,7 +55,7 @@
             </div>
             <div class="col-12">Reserve ratio: {{reserveRatio}}%</div>
             <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
-            <div class="col-6">USD invested: {{HRTotalDAI.toLocaleString()}}</div>
+            <div class="col-6">USD invested: {{HRTotalDAIInvested.toLocaleString()}}</div>
             <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
             <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
             <br />
@@ -227,6 +227,7 @@ export default Vue.extend({
     return {
       totalMGL: 0,
       totalDAI: 0,
+      totalDaiInvested: 0,
       reserveRatio: 20,
       reserveSupply: 0,
       investmentFund: 0,
@@ -286,7 +287,8 @@ export default Vue.extend({
   methods: {
     start(): void {
       this.totalMGL = this.premintedMGL * MGL;
-      this.totalDAI = this.initialDAIInvestment * DAI;
+      this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
+      this.totalDaiInvested = this.totalDAI;
       this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
       this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
 
@@ -319,6 +321,7 @@ export default Vue.extend({
         return;
       }
       this.totalDAI += investment;
+      this.totalDaiInvested += investment;
       this.reserveSupply += investment * this.reserveRatioDecimal;
       this.investmentFund += investment * (1 - this.reserveRatioDecimal);
       this.totalMGL += mglMinted;
@@ -371,6 +374,7 @@ export default Vue.extend({
     reset(): void {
       this.totalMGL = 0;
       this.totalDAI = 0;
+      this.totalDaiInvested = 0;
       this.reserveSupply = 0;
       this.investmentFund = 0;
       this.premintedMGL = 0;
@@ -399,6 +403,10 @@ export default Vue.extend({
 
     HRTotalDAI(): number {
       return this.totalDAI / DAI;
+    },
+
+    HRTotalDAIInvested(): number {
+      return this.totalDaiInvested / DAI;
     },
 
     HRReserveSupply(): number {
