@@ -217,8 +217,9 @@ const buyCalc = (
   preMintedAmount: number,
   amount: number
 ) => {
+  const buySlopeMultiplier = 10;
   const x1 = continuousTokenSupply ** 2;
-  const x2 = 2 * amount * preMintedAmount;
+  const x2 = 2 * amount * preMintedAmount * buySlopeMultiplier;
   const x3 = (x1 + x2) ** 0.5;
   return x3 - continuousTokenSupply;
 };
@@ -247,7 +248,7 @@ export default Vue.extend({
       reserveRatio: 20,
       reserveSupply: 0,
       investmentFund: 0,
-      premintedMGL: 6000000,
+      premintedMGL: 60000000,
       initialDAIInvestment: 3000000,
       daiInvestment: 0,
       mglSold: 0,
