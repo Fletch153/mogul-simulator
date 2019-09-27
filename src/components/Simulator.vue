@@ -58,6 +58,8 @@
             <div class="col-6">USD invested: {{HRTotalDAIInvested.toLocaleString()}}</div>
             <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
             <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+            <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
+            <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
             <br />
             <br />
           </div>
@@ -109,6 +111,20 @@
                   id="reserveRatioHelp"
                   class="form-text text-muted"
                 >What % of each investment goes to the reserve</small>
+              </div>
+
+              <div class="form-group">
+                <label for="isCommissionEnabled">Enable 2% Commission</label>
+                <input
+                        type="checkbox"
+                        class="form-control col-3"
+                        id="isCommissionEnabled"
+                        v-model="isCommissionEnabled"
+                />
+                <small
+                        id="isCommissionEnabledHelp"
+                        class="form-text text-muted"
+                >Enable 2% more tokens going to commission balance</small>
               </div>
 
               <input type="button" class="btn btn-primary" value="Start" @click="start" />
@@ -231,8 +247,8 @@ export default Vue.extend({
       reserveRatio: 20,
       reserveSupply: 0,
       investmentFund: 0,
-      premintedMGL: 5000000,
-      initialDAIInvestment: 2500000,
+      premintedMGL: 6000000,
+      initialDAIInvestment: 3000000,
       daiInvestment: 0,
       mglSold: 0,
       dividendPaid: 0,
@@ -240,6 +256,8 @@ export default Vue.extend({
       historicalEvents: new Array<string>(),
       historicalSellPrices: new Array<string>(),
       historicalBuyPrices: new Array<string>(),
+      commissionBalance: 0,
+      isCommissionEnabled: false,
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -291,6 +309,7 @@ export default Vue.extend({
       this.totalDaiInvested = this.totalDAI;
       this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
       this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
+      this.commissionBalance = 0;
 
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
@@ -325,6 +344,12 @@ export default Vue.extend({
       this.reserveSupply += investment * this.reserveRatioDecimal;
       this.investmentFund += investment * (1 - this.reserveRatioDecimal);
       this.totalMGL += mglMinted;
+
+      if (this.isCommissionEnabled) {
+        const commissionMgl = mglMinted * 2 / 100;
+        this.totalMGL += commissionMgl;
+        this.commissionBalance += commissionMgl;
+      }
 
       const investmentNumeral = numeral(this.daiInvestment).format("0.0a");
       this.historicalEvents.push(`Invested $${investmentNumeral}`);
@@ -382,6 +407,7 @@ export default Vue.extend({
       this.daiInvestment = 0;
       this.mglSold = 0;
       this.dividendPaid = 0;
+      this.commissionBalance = 0;
       this.dividendRatio = 20;
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
@@ -399,6 +425,10 @@ export default Vue.extend({
 
     HRTotalMGL(): number {
       return this.totalMGL / MGL;
+    },
+
+    HRCommissionBalance(): number {
+      return this.commissionBalance / MGL;
     },
 
     HRTotalDAI(): number {
