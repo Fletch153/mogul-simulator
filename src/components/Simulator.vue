@@ -60,6 +60,7 @@
             <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
             <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
             <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
+            <div class="col-6">Burnt Supply: {{HRBurntSupply.toLocaleString()}}</div>
             <br />
             <br />
           </div>
@@ -420,9 +421,14 @@ export default Vue.extend({
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
 
-      burn(): void {
-        // this.burntSupply +=
-      },
+    burn(): void {
+      const tokensToBurn = this.mglToBurn * DAI;
+      this.burntSupply += tokensToBurn;
+      this.totalMGL -= tokensToBurn;
+
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+    },
 
     payDividend(): void {
       const dividend = this.dividendPaid * DAI;
@@ -449,6 +455,8 @@ export default Vue.extend({
       this.mglSold = 0;
       this.dividendPaid = 0;
       this.commissionBalance = 0;
+      this.mglToBurn = 0;
+      this.burntSupply = 0;
       this.dividendRatio = 20;
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
@@ -470,6 +478,10 @@ export default Vue.extend({
 
     HRCommissionBalance(): number {
       return this.commissionBalance / MGL;
+    },
+
+    HRBurntSupply(): number {
+      return this.burntSupply / DAI;
     },
 
     HRTotalDAI(): number {
