@@ -115,6 +115,20 @@
               </div>
 
               <div class="form-group">
+                  <label for="buySlopeMultiplier">Buy Slope Multiplier</label>
+                  <input
+                    type="number"
+                    class="form-control col-3"
+                    id="buySlopeMultiplier"
+                    v-model="buySlopeMultiplier"
+                  />
+                  <small
+                          id="buySlopeMultiplierHelp"
+                          class="form-text text-muted"
+                  >The higher the buy slope is, the more value unit tokens will have</small>
+              </div>
+
+              <div class="form-group">
                 <label for="isCommissionEnabled">Enable 2% Commission</label>
                 <input
                         type="checkbox"
@@ -238,9 +252,9 @@ const MGL = 1000000000000000000; // 1 MGL
 const buyCalc = (
   continuousTokenSupply: number,
   preMintedAmount: number,
-  amount: number
+  amount: number,
+  buySlopeMultiplier: number
 ) => {
-  const buySlopeMultiplier = 10;
   const x1 = continuousTokenSupply ** 2;
   const x2 = 2 * amount * preMintedAmount * buySlopeMultiplier;
   const x3 = (x1 + x2) ** 0.5;
@@ -282,6 +296,7 @@ export default Vue.extend({
       mglToBurn: 0,
       reserveRatio: 20,
       reserveSupply: 0,
+      buySlopeMultiplier: 10,
       investmentFund: 0,
       premintedMGL: 60000000,
       initialDAIInvestment: 3000000,
@@ -363,7 +378,8 @@ export default Vue.extend({
       const mglMinted = buyCalc(
         this.totalMGL,
         this.premintedMGL * MGL,
-        investment
+        investment,
+        this.buySlopeMultiplier
       );
       const r = confirm(
         `You are about to buy ${(mglMinted / MGL).toFixed(
@@ -505,7 +521,7 @@ export default Vue.extend({
       if (this.totalMGL === 0) {
         return 0;
       }
-      return buyCalc(this.totalMGL, this.premintedMGL * MGL, DAI) / MGL;
+      return buyCalc(this.totalMGL, this.premintedMGL * MGL, DAI, this.buySlopeMultiplier) / MGL;
     },
 
     HRBuyDAIPerMGL(): number {
@@ -538,7 +554,7 @@ export default Vue.extend({
       for (let i = 0; i <= 20; i++) {
         const investAmount = 1 + i * 10000000;
         const mglReceived =
-          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
+          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI, this.buySlopeMultiplier) /
           MGL;
         data.push(investAmount / mglReceived);
       }
@@ -563,7 +579,8 @@ export default Vue.extend({
         const mglReceived = buyCalc(
           this.totalMGL,
           this.premintedMGL * MGL,
-          sellAmount * DAI
+          sellAmount * DAI,
+          this.buySlopeMultiplier
         );
         const reserveAddition = sellAmount * DAI * this.reserveRatioDecimal;
         const receivedDai = sellCalc(
@@ -585,7 +602,7 @@ export default Vue.extend({
       for (let i = 0; i <= 10; i++) {
         const investAmount = 1 + i * 10000000;
         const mglReceived =
-          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI) /
+          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI, this.buySlopeMultiplier) /
           MGL;
         data.push(Math.round(mglReceived + this.totalMGL / MGL).toString());
       }
