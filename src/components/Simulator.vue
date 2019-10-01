@@ -60,6 +60,7 @@
             <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
             <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
             <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
+            <div class="col-6">Burnt Supply: {{HRBurntSupply.toLocaleString()}}</div>
             <br />
             <br />
           </div>
@@ -71,7 +72,7 @@
         <div class="col-12">
           <h1>Actions</h1>
           <div class="row">
-            <div class="col-4 right-separator">
+            <div class="col-6 right-separator">
               <h4>Initial investment</h4>
               <div class="form-group">
                 <label for="premintedMGL">Preminted MGL</label>
@@ -129,8 +130,7 @@
 
               <input type="button" class="btn btn-primary" value="Start" @click="start" />
             </div>
-            <div class="col-4 right-separator"></div>
-            <div class="col-4 right-separator">
+            <div class="col-6 right-separator">
               <h4>Reset Simulation</h4>
               <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
             </div>
@@ -138,7 +138,7 @@
         </div>
         <div class="col-12">
           <div class="row">
-            <div class="col-4 right-separator">
+            <div class="col-6 right-separator">
               <h4>Invest</h4>
               <div class="form-group">
                 <label for="daiInvestment">USD</label>
@@ -156,7 +156,7 @@
 
               <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
             </div>
-            <div class="col-4 right-separator">
+            <div class="col-6 right-separator">
               <h4>Sell</h4>
               <div class="form-group">
                 <label for="mglSold">MGL</label>
@@ -166,39 +166,62 @@
 
               <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
             </div>
-            <div class="col-4 right-separator">
-              <h4>Pay Dividend</h4>
-              <div class="form-group">
-                <label for="dividendPaid">USD</label>
-                <input
-                  type="text"
-                  class="form-control col-6"
-                  id="dividendPaid"
-                  v-model="dividendPaid"
-                />
-                <small
-                  id="dividendPaidHelp"
-                  class="form-text text-muted"
-                >How much USD you want to pay as dividend</small>
-              </div>
-              <div class="form-group">
-                <label for="dividendRatio">Percent to Reserve (%)</label>
-                <input
-                  type="text"
-                  class="form-control col-3"
-                  id="dividendRatio"
-                  v-model="dividendRatio"
-                />
-                <small
-                  id="dividendRatioHelp"
-                  class="form-text text-muted"
-                >What percent do you want to go to the reserve</small>
-              </div>
-
-              <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
-            </div>
           </div>
         </div>
+        <div class="col-12">
+              <div class="row">
+                  <div class="col-6 right-separator">
+                      <h4>Burn</h4>
+                      <div class="form-group">
+                          <label for="burntSupply">MGL</label>
+                          <input
+                                  type="text"
+                                  class="form-control col-6"
+                                  id="burntSupply"
+                                  v-model="mglToBurn"
+                          />
+                          <small
+                                  id="burntSupplyHelp"
+                                  class="form-text text-muted"
+                          >How much MGL you want to burn</small>
+                      </div>
+
+                      <input type="button" class="btn btn-primary" value="Burn" @click="burn" />
+                  </div>
+
+                  <div class="col-6 right-separator">
+                      <h4>Pay Dividend</h4>
+                      <div class="form-group">
+                          <label for="dividendPaid">USD</label>
+                          <input
+                                  type="text"
+                                  class="form-control col-6"
+                                  id="dividendPaid"
+                                  v-model="dividendPaid"
+                          />
+                          <small
+                                  id="dividendPaidHelp"
+                                  class="form-text text-muted"
+                          >How much USD you want to pay as dividend</small>
+                      </div>
+                      <div class="form-group">
+                          <label for="dividendRatio">Percent to Reserve (%)</label>
+                          <input
+                                  type="text"
+                                  class="form-control col-3"
+                                  id="dividendRatio"
+                                  v-model="dividendRatio"
+                          />
+                          <small
+                                  id="dividendRatioHelp"
+                                  class="form-text text-muted"
+                          >What percent do you want to go to the reserve</small>
+                      </div>
+
+                      <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+                  </div>
+              </div>
+          </div>
       </div>
     </div>
   </div>
@@ -227,12 +250,22 @@ const buyCalc = (
 const sellCalc = (
   continuousTokenSupply: number,
   reserveSupply: number,
-  tokenAmount: number
+  tokenAmount: number,
+  burntSupply: number
 ) => {
-  const a = 1 - tokenAmount / continuousTokenSupply;
-  const b = 1 - a * a;
 
-  return reserveSupply * b;
+  const sellSlope = (2 * reserveSupply) / ((continuousTokenSupply + burntSupply) ** 2);
+
+  const a = continuousTokenSupply * tokenAmount * sellSlope;
+  const b = (tokenAmount ** 2 * sellSlope) / 2;
+
+  const c = (sellSlope * tokenAmount * (burntSupply ** 2)) / (2 * (continuousTokenSupply - burntSupply));
+  return a - b + c;
+
+  // const a = 1 - tokenAmount / continuousTokenSupply;
+  // const b = 1 - a * a;
+  //
+  // return reserveSupply * b;
 };
 
 export default Vue.extend({
@@ -245,6 +278,8 @@ export default Vue.extend({
       totalMGL: 0,
       totalDAI: 0,
       totalDaiInvested: 0,
+      burntSupply: 0,
+      mglToBurn: 0,
       reserveRatio: 20,
       reserveSupply: 0,
       investmentFund: 0,
@@ -363,7 +398,8 @@ export default Vue.extend({
       const daiReturned = sellCalc(
         this.totalMGL,
         this.reserveSupply,
-        sellAmount
+        sellAmount,
+        this.burntSupply
       );
       const r = confirm(
         `You are about to sell ${this.mglSold} MGL at price ${(
@@ -381,6 +417,17 @@ export default Vue.extend({
 
       const sellNumeral = numeral(this.mglSold).format("0.0a");
       this.historicalEvents.push(`Sold ${sellNumeral} MGL`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+    },
+
+    burn(): void {
+      const tokensToBurn = this.mglToBurn * MGL;
+      this.burntSupply += tokensToBurn;
+      this.totalMGL -= tokensToBurn;
+
+      const burnNumeral = numeral(this.mglToBurn).format("0.0a");
+      this.historicalEvents.push(`Burned ${burnNumeral} MGL`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
@@ -409,6 +456,8 @@ export default Vue.extend({
       this.mglSold = 0;
       this.dividendPaid = 0;
       this.commissionBalance = 0;
+      this.mglToBurn = 0;
+      this.burntSupply = 0;
       this.dividendRatio = 20;
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
@@ -430,6 +479,10 @@ export default Vue.extend({
 
     HRCommissionBalance(): number {
       return this.commissionBalance / MGL;
+    },
+
+    HRBurntSupply(): number {
+      return this.burntSupply / DAI;
     },
 
     HRTotalDAI(): number {
@@ -467,7 +520,7 @@ export default Vue.extend({
         return 0;
       }
 
-      const DAIPerMGL = sellCalc(this.totalMGL, this.reserveSupply, MGL) / DAI;
+      const DAIPerMGL = sellCalc(this.totalMGL, this.reserveSupply, MGL, this.burntSupply) / DAI;
       return DAIPerMGL;
     },
 
@@ -516,7 +569,8 @@ export default Vue.extend({
         const receivedDai = sellCalc(
           this.totalMGL + mglReceived,
           this.reserveSupply + reserveAddition,
-          mglReceived
+          mglReceived,
+          this.burntSupply
         );
         const daiPerMGL = receivedDai / mglReceived;
         data.push(daiPerMGL);
