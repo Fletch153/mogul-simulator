@@ -437,7 +437,7 @@ export default Vue.extend({
     },
 
     burn(): void {
-      const tokensToBurn = this.mglToBurn * DAI;
+      const tokensToBurn = this.mglToBurn * MGL;
       this.burntSupply += tokensToBurn;
       this.totalMGL -= tokensToBurn;
 
@@ -468,7 +468,6 @@ export default Vue.extend({
       this.premintedMGL = 0;
       this.initialDAIInvestment = 0;
       this.daiInvestment = 0;
-      this.burntSupply = 0;
       this.mglSold = 0;
       this.dividendPaid = 0;
       this.commissionBalance = 0;
