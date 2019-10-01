@@ -426,6 +426,8 @@ export default Vue.extend({
       this.burntSupply += tokensToBurn;
       this.totalMGL -= tokensToBurn;
 
+      const burnNumeral = numeral(this.mglToBurn).format("0.0a");
+      this.historicalEvents.push(`Sold ${burnNumeral} MGL`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
