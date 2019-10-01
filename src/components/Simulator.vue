@@ -115,6 +115,20 @@
               </div>
 
               <div class="form-group">
+                  <label for="buySlopeMultiplier">Buy Slope Multiplier</label>
+                  <input
+                    type="number"
+                    class="form-control col-3"
+                    id="buySlopeMultiplier"
+                    v-model="buySlopeMultiplier"
+                  />
+                  <small
+                          id="buySlopeMultiplierHelp"
+                          class="form-text text-muted"
+                  >The higher the buy slope is, the more value unit tokens will have</small>
+              </div>
+
+              <div class="form-group">
                 <label for="isCommissionEnabled">Enable 2% Commission</label>
                 <input
                         type="checkbox"
@@ -282,6 +296,7 @@ export default Vue.extend({
       mglToBurn: 0,
       reserveRatio: 20,
       reserveSupply: 0,
+      buySlopeMultiplier: 10,
       investmentFund: 0,
       premintedMGL: 60000000,
       initialDAIInvestment: 3000000,
