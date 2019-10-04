@@ -88,7 +88,7 @@
                 >How much MGL you want to premint</small>
               </div>
               <div class="form-group">
-                <label for="initialDAIInvestment">Initial DAI Investment</label>
+                <label for="initialDAIInvestment">Initial USD Investment</label>
                 <input
                   type="text"
                   class="form-control col-6"
@@ -98,7 +98,7 @@
                 <small
                   id="initialDAIInvestmentHelp"
                   class="form-text text-muted"
-                >How much DAI you will invest in the beginning</small>
+                >How much USD you will invest in the beginning</small>
               </div>
               <div class="form-group">
                 <label for="reserveRatio">Reserve Ratio (%)</label>
