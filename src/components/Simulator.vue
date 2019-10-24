@@ -141,8 +141,13 @@
                         class="form-text text-muted"
                 >Enable 2% more tokens going to commission balance</small>
               </div>
+              <span style="margin-right: 50px">
+                  <input type="button" class="btn btn-primary" value="Start" @click="start" />
+              </span>
+              <span>
+                  <input type="button" class="btn btn-primary" value="Close" @click="close" />
+              </span>
 
-              <input type="button" class="btn btn-primary" value="Start" @click="start" />
             </div>
             <div class="col-6 right-separator">
               <h4>Reset Simulation</h4>
@@ -261,19 +266,37 @@ const buyCalc = (
   return x3 - continuousTokenSupply;
 };
 
+const calcCloseTax = (
+    continuousTokenSupply: number,
+    reserveSupply: number,
+    preMintedAmount: number,
+    buySlopeMultiplier : number
+) => {
+    // exit_fee = total_supply*(total_supply+burnt_supply)*buy_slope - buyback_reserve.
+    return (continuousTokenSupply * continuousTokenSupply / (preMintedAmount * buySlopeMultiplier)) / 2 - reserveSupply
+};
+
+const sellClosedCalc = (
+    continuousTokenSupply: number,
+    reserveSupply: number,
+    tokenAmount: number
+) => {
+
+    return reserveSupply * tokenAmount / continuousTokenSupply;
+};
+
 const sellCalc = (
   continuousTokenSupply: number,
   reserveSupply: number,
   tokenAmount: number,
   burntSupply: number
 ) => {
-
   const sellSlope = (2 * reserveSupply) / ((continuousTokenSupply + burntSupply) ** 2);
 
   const a = continuousTokenSupply * tokenAmount * sellSlope;
   const b = (tokenAmount ** 2 * sellSlope) / 2;
-
   const c = (sellSlope * tokenAmount * (burntSupply ** 2)) / (2 * (continuousTokenSupply - burntSupply));
+
   return a - b + c;
 
   // const a = 1 - tokenAmount / continuousTokenSupply;
@@ -309,6 +332,7 @@ export default Vue.extend({
       historicalBuyPrices: new Array<string>(),
       commissionBalance: 0,
       isCommissionEnabled: false,
+      isOrganisationClosed: false,
       chartOptions: {
         responsive: true,
         maintainAspectRatio: false,
@@ -372,8 +396,25 @@ export default Vue.extend({
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
-
+    close(): void {
+      const tax = calcCloseTax(this.totalMGL, this.reserveSupply, this.premintedMGL * MGL, this.buySlopeMultiplier);
+        const r = confirm(
+        `You have to pay  ${(tax / MGL).toFixed(
+          2
+        )} USD to close the Organisation. Shall we proceed?`
+      );
+      if (!r) {
+        return;
+      }
+      this.isOrganisationClosed = true;
+      this.reserveSupply += tax;
+      this.totalDAI += tax;
+    },
     invest(): void {
+      if (this.isOrganisationClosed) {
+          alert("The organisation is closed");
+          return;
+      }
       const investment = this.daiInvestment * DAI;
       const mglMinted = buyCalc(
         this.totalMGL,
@@ -411,12 +452,27 @@ export default Vue.extend({
 
     sell(): void {
       const sellAmount = this.mglSold * MGL;
-      const daiReturned = sellCalc(
-        this.totalMGL,
-        this.reserveSupply,
-        sellAmount,
-        this.burntSupply
-      );
+
+      let daiReturned;
+      if (!this.isOrganisationClosed) {
+          daiReturned = sellCalc(
+              this.totalMGL,
+              this.reserveSupply,
+              sellAmount,
+              this.burntSupply
+          );
+      } else {
+          daiReturned = sellClosedCalc(
+              this.totalMGL,
+              this.reserveSupply,
+              sellAmount
+          );
+      }
+      if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+        alert("can't sell more than the tokens in circulation");
+        return;
+      }
+
       const r = confirm(
         `You are about to sell ${this.mglSold} MGL at price ${(
           daiReturned / sellAmount
