@@ -270,10 +270,16 @@ const calcCloseTax = (
     continuousTokenSupply: number,
     reserveSupply: number,
     preMintedAmount: number,
-    buySlopeMultiplier : number
+    buySlopeMultiplier : number,
+    burntSupply: number
 ) => {
-    // exit_fee = total_supply*(total_supply+burnt_supply)*buy_slope - buyback_reserve.
-    return (continuousTokenSupply * continuousTokenSupply / (preMintedAmount * buySlopeMultiplier)) / 2 - reserveSupply
+    const normalizer = 100000000;
+    const continuousTokenSupplyTruncated = continuousTokenSupply / normalizer;
+    const burntSupplyTruncated = burntSupply / normalizer;
+    const preMintedAmountTruncated = preMintedAmount / normalizer;
+    const reserveSupplyTruncated = reserveSupply / normalizer;
+
+    return ((continuousTokenSupplyTruncated + burntSupplyTruncated) * (continuousTokenSupplyTruncated + burntSupplyTruncated) / (preMintedAmountTruncated * buySlopeMultiplier) / 2 - reserveSupplyTruncated) * normalizer
 };
 
 const sellClosedCalc = (
@@ -397,7 +403,7 @@ export default Vue.extend({
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
     close(): void {
-      const tax = calcCloseTax(this.totalMGL, this.reserveSupply, this.premintedMGL * MGL, this.buySlopeMultiplier);
+      const tax = calcCloseTax(this.totalMGL, this.reserveSupply, this.premintedMGL * MGL, this.buySlopeMultiplier, this.burntSupply);
         const r = confirm(
         `You have to pay  ${(tax / MGL).toFixed(
           2
@@ -468,7 +474,7 @@ export default Vue.extend({
               sellAmount
           );
       }
-      if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+        if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
         alert("can't sell more than the tokens in circulation");
         return;
       }
@@ -494,7 +500,15 @@ export default Vue.extend({
     },
 
     burn(): void {
+      if (this.isOrganisationClosed) {
+        alert("The organisation is closed");
+        return;
+      }
       const tokensToBurn = this.mglToBurn * MGL;
+      if (this.totalMGL - tokensToBurn < 0) {
+          alert("Can't burn more tokens than you have");
+          return;
+      }
       this.burntSupply += tokensToBurn;
       this.totalMGL -= tokensToBurn;
 
