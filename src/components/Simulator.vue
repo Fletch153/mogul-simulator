@@ -328,7 +328,7 @@ export default Vue.extend({
       buySlopeMultiplier: 10,
       investmentFund: 0,
       premintedMGL: 60000000,
-      initialDAIInvestment: 3000000,
+      initialDAIInvestment: 600000, // 20% of 3000000
       daiInvestment: 0,
       mglSold: 0,
       dividendPaid: 0,
@@ -388,8 +388,9 @@ export default Vue.extend({
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
       this.totalDaiInvested = this.totalDAI;
-      this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
-      this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
+      // modified by the need of mogul
+      this.reserveSupply = this.totalDAI; // * this.reserveRatioDecimal;
+      // this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
       this.commissionBalance = 0;
 
       this.historicalEvents = new Array<string>();
