@@ -328,7 +328,7 @@ export default Vue.extend({
       buySlopeMultiplier: 10,
       investmentFund: 0,
       premintedMGL: 60000000,
-      initialDAIInvestment: 600000, // 20% of 3000000
+      initialDAIInvestment: 3000000,
       daiInvestment: 0,
       mglSold: 0,
       dividendPaid: 0,
@@ -389,8 +389,8 @@ export default Vue.extend({
       this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
       this.totalDaiInvested = this.totalDAI;
       // modified by the need of mogul
-      this.reserveSupply = this.totalDAI; // * this.reserveRatioDecimal;
-      // this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
+      this.reserveSupply = this.totalDAI * this.reserveRatioDecimal;
+      this.investmentFund = this.totalDAI * (1 - this.reserveRatioDecimal);
       this.commissionBalance = 0;
 
       this.historicalEvents = new Array<string>();
@@ -404,7 +404,7 @@ export default Vue.extend({
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
     },
     close(): void {
-      const tax = calcCloseTax(this.totalMGL, this.reserveSupply, this.premintedMGL * MGL, this.buySlopeMultiplier, this.burntSupply);
+      const tax = this.totalDaiInvested;
         const r = confirm(
         `You have to pay  ${(tax / MGL).toFixed(
           2
