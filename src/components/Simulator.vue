@@ -270,7 +270,7 @@ const calcCloseTax = (
     continuousTokenSupply: number,
     reserveSupply: number,
     preMintedAmount: number,
-    buySlopeMultiplier : number,
+    buySlopeMultiplier: number,
     burntSupply: number
 ) => {
     const normalizer = 100000000;
@@ -279,7 +279,7 @@ const calcCloseTax = (
     const preMintedAmountTruncated = preMintedAmount / normalizer;
     const reserveSupplyTruncated = reserveSupply / normalizer;
 
-    return ((continuousTokenSupplyTruncated + burntSupplyTruncated) * (continuousTokenSupplyTruncated + burntSupplyTruncated) / (preMintedAmountTruncated * buySlopeMultiplier) / 2 - reserveSupplyTruncated) * normalizer
+    return ((continuousTokenSupplyTruncated + burntSupplyTruncated) * (continuousTokenSupplyTruncated + burntSupplyTruncated) / (preMintedAmountTruncated * buySlopeMultiplier) / 2 - reserveSupplyTruncated) * normalizer;
 };
 
 const sellClosedCalc = (
@@ -405,7 +405,7 @@ export default Vue.extend({
     },
     close(): void {
       const tax = this.totalDaiInvested;
-        const r = confirm(
+      const r = confirm(
         `You have to pay  ${(tax / MGL).toFixed(
           2
         )} USD to close the Organisation. Shall we proceed?`
@@ -475,7 +475,7 @@ export default Vue.extend({
               sellAmount
           );
       }
-        if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+      if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
         alert("can't sell more than the tokens in circulation");
         return;
       }
@@ -537,8 +537,8 @@ export default Vue.extend({
       this.totalDaiInvested = 0;
       this.reserveSupply = 0;
       this.investmentFund = 0;
-      this.premintedMGL = 0;
-      this.initialDAIInvestment = 0;
+      this.premintedMGL = 60000000;
+      this.initialDAIInvestment = 3000000;
       this.daiInvestment = 0;
       this.mglSold = 0;
       this.dividendPaid = 0;
