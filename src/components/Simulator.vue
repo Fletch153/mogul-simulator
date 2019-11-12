@@ -612,6 +612,9 @@ export default Vue.extend({
     },
 
     HRSellMGLperDAI(): number {
+      if (1 / this.HRSellDAIPerMGL < 0) {
+          return 0;
+      }
       return 1 / this.HRSellDAIPerMGL;
     },
 
