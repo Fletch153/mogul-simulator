@@ -22,8 +22,9 @@
   "license": "MIT",
   "homepage": "https://github.com/mogulproductions/mogul-simulator",
   "dependencies": {
-    "@types/numeral": "^0.0.26",
     "@babel/polyfill": "~7.2",
+    "@types/numeral": "^0.0.26",
+    "buefy": "^0.8.8",
     "chart.js": "^2.9.3",
     "numeral": "^2.0.6",
     "vue": "~2.6",

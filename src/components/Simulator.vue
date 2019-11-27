@@ -2,8 +2,10 @@
   <div class="mogul-corg">
     <header class="level">
       <div class="level-left logo">
-        <div class="logo-wrapper">
-          <MogulLogo />
+        <div class="logo-box"><MogulLogo /></div>
+        <div class="heading">
+          <h1>Continuous organisation <HelpIcon class="help-header" /></h1>
+          <p>Simulation</p>
         </div>
       </div>
       <div class="level-left simulate"></div>
@@ -258,6 +260,7 @@
 import Vue from "vue";
 import CurveChart from "./CurveChart.vue";
 import MogulLogo from "../assets/mogul-logo.svg?inline";
+import HelpIcon from "../assets/question-mark.svg?inline";
 import numeral from "numeral";
 
 const DAI = 1000000000000000000; // 1 DAI
@@ -324,7 +327,8 @@ export default Vue.extend({
   name: "Simulator",
   components: {
     CurveChart,
-    MogulLogo
+    MogulLogo,
+    HelpIcon
   },
   data() {
     return {
@@ -755,6 +759,41 @@ body {
 header {
   height: 93px;
   margin-bottom: 0;
+  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2);
+}
+.logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+.logo-box {
+  width: 93px;
+  height: 93px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+  margin-right: 20px;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0;
+  h1 {
+    font-size: 21px;
+    line-height: 21px;
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  p {
+    color: #737373;
+    font-size: 20px;
+    line-height: 20px;
+  }
+  .help-header {
+    margin-left: 11px;
+  }
 }
 
 </style>
