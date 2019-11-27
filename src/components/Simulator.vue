@@ -19,250 +19,279 @@
     </header>
 
     <!-- CONTENT -->
+    <section class="main-content">
+      <div class="col-7 simulator">
+        <div class="row">
+          <div class="col-12">
+            <div class="row">
+              <div class="col-12">
+                <h1>Simulation</h1>
+                <hr />
+                <h4>Prices</h4>
+              </div>
+              <!-- <div class="col-3">
+                Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
+                <small
+                  class="form-text text-muted"
+                >How much MGL you are getting per 1 USD invested</small>
+              </div>
+              <div class="col-3">
+                Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
+                <small
+                  class="form-text text-muted"
+                >How much MGL you should send to receive 1 USD</small>
+              </div>-->
+              <div class="col-3">
+                Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
+                <small
+                  class="form-text text-muted"
+                >How much USD you need to send to receive 1 MGL</small>
+              </div>
+              <div class="col-3">
+                Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
+                <small
+                  class="form-text text-muted"
+                >How much USD you are going to receive for the next 1 MGL sold</small>
+              </div>
+              <div class="col-12">
+                <hr />
+              </div>
+              <div class="col-12">
+                <h4>Prices Charts</h4>
+              </div>
 
-    <div class="col-7 simulator">
-      <div class="row">
-        <div class="col-12">
-          <div class="row">
-            <div class="col-12">
-              <h1>Simulation</h1>
-              <hr />
-              <h4>Prices</h4>
-            </div>
-            <!-- <div class="col-3">
-              Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
-              <small
-                class="form-text text-muted"
-              >How much MGL you are getting per 1 USD invested</small>
-            </div>
-            <div class="col-3">
-              Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
-              <small
-                class="form-text text-muted"
-              >How much MGL you should send to receive 1 USD</small>
-            </div>-->
-            <div class="col-3">
-              Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
-              <small
-                class="form-text text-muted"
-              >How much USD you need to send to receive 1 MGL</small>
-            </div>
-            <div class="col-3">
-              Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
-              <small
-                class="form-text text-muted"
-              >How much USD you are going to receive for the next 1 MGL sold</small>
-            </div>
-            <div class="col-12">
-              <hr />
-            </div>
-            <div class="col-12">
-              <h4>Prices Charts</h4>
-            </div>
+              <div class="col-12 chart-div">
+                <CurveChart :chart-data="historyChartDataset" :options="historyChartOptions" />
+              </div>
 
-            <div class="col-12 chart-div">
-              <CurveChart :chart-data="historyChartDataset" :options="historyChartOptions" />
+              <div class="col-12 chart-div">
+                <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
+              </div>
+              <div class="col-12">
+                <hr />
+              </div>
+              <div class="col-12">
+                <h4>Simulation details</h4>
+              </div>
+              <div class="col-12">Reserve ratio: {{reserveRatio}}%</div>
+              <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
+              <div class="col-6">USD invested: {{HRTotalDAIInvested.toLocaleString()}}</div>
+              <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
+              <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+              <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
+              <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
+              <div class="col-6">Burnt Supply: {{HRBurntSupply.toLocaleString()}}</div>
+              <br />
+              <br />
             </div>
-
-            <div class="col-12 chart-div">
-              <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
-            </div>
-            <div class="col-12">
-              <hr />
-            </div>
-            <div class="col-12">
-              <h4>Simulation details</h4>
-            </div>
-            <div class="col-12">Reserve ratio: {{reserveRatio}}%</div>
-            <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
-            <div class="col-6">USD invested: {{HRTotalDAIInvested.toLocaleString()}}</div>
-            <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
-            <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
-            <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
-            <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
-            <div class="col-6">Burnt Supply: {{HRBurntSupply.toLocaleString()}}</div>
-            <br />
-            <br />
           </div>
         </div>
       </div>
-    </div>
-    <div class="col-5 simulator">
-      <div class="row">
-        <div class="col-12">
-          <h1>Actions</h1>
-          <div class="row">
-            <div class="col-6 right-separator">
-              <h4>Initial investment</h4>
-              <div class="form-group">
-                <label for="premintedMGL">Preminted MGL</label>
-                <input
-                  type="text"
-                  class="form-control col-6"
-                  id="premintedMGL"
-                  v-model="premintedMGL"
-                />
-                <small
-                  id="premintedMGLHelp"
-                  class="form-text text-muted"
-                >How much MGL you want to premint</small>
-              </div>
-              <div class="form-group">
-                <label for="initialDAIInvestment">Initial USD Investment</label>
-                <input
-                  type="text"
-                  class="form-control col-6"
-                  id="initialDAIInvestment"
-                  v-model="initialDAIInvestment"
-                />
-                <small
-                  id="initialDAIInvestmentHelp"
-                  class="form-text text-muted"
-                >How much USD you will invest in the beginning</small>
-              </div>
-              <div class="form-group">
-                <label for="reserveRatio">Reserve Ratio (%)</label>
-                <input
-                  type="text"
-                  class="form-control col-3"
-                  id="reserveRatio"
-                  v-model="reserveRatio"
-                />
-                <small
-                  id="reserveRatioHelp"
-                  class="form-text text-muted"
-                >What % of each investment goes to the reserve</small>
-              </div>
-
-              <div class="form-group">
-                  <label for="buySlopeMultiplier">Buy Slope Multiplier</label>
+      <div class="col-5 simulator">
+        <div class="row">
+          <div class="col-12">
+            <h1>Actions</h1>
+            <div class="row">
+              <div class="col-6 right-separator">
+                <h4>Initial investment</h4>
+                <div class="form-group">
+                  <label for="premintedMGL">Preminted MGL</label>
                   <input
-                    type="number"
-                    class="form-control col-3"
-                    id="buySlopeMultiplier"
-                    v-model="buySlopeMultiplier"
+                    type="text"
+                    class="form-control col-6"
+                    id="premintedMGL"
+                    v-model="premintedMGL"
                   />
                   <small
-                          id="buySlopeMultiplierHelp"
+                    id="premintedMGLHelp"
+                    class="form-text text-muted"
+                  >How much MGL you want to premint</small>
+                </div>
+                <div class="form-group">
+                  <label for="initialDAIInvestment">Initial USD Investment</label>
+                  <input
+                    type="text"
+                    class="form-control col-6"
+                    id="initialDAIInvestment"
+                    v-model="initialDAIInvestment"
+                  />
+                  <small
+                    id="initialDAIInvestmentHelp"
+                    class="form-text text-muted"
+                  >How much USD you will invest in the beginning</small>
+                </div>
+                <div class="form-group">
+                  <label for="reserveRatio">Reserve Ratio (%)</label>
+                  <input
+                    type="text"
+                    class="form-control col-3"
+                    id="reserveRatio"
+                    v-model="reserveRatio"
+                  />
+                  <small
+                    id="reserveRatioHelp"
+                    class="form-text text-muted"
+                  >What % of each investment goes to the reserve</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="buySlopeMultiplier">Buy Slope Multiplier</label>
+                    <input
+                      type="number"
+                      class="form-control col-3"
+                      id="buySlopeMultiplier"
+                      v-model="buySlopeMultiplier"
+                    />
+                    <small
+                            id="buySlopeMultiplierHelp"
+                            class="form-text text-muted"
+                    >The higher the buy slope is, the more value unit tokens will have</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="isCommissionEnabled">Enable 2% Commission</label>
+                  <input
+                          type="checkbox"
+                          class="form-control col-3"
+                          id="isCommissionEnabled"
+                          v-model="isCommissionEnabled"
+                  />
+                  <small
+                          id="isCommissionEnabledHelp"
                           class="form-text text-muted"
-                  >The higher the buy slope is, the more value unit tokens will have</small>
-              </div>
+                  >Enable 2% more tokens going to commission balance</small>
+                </div>
+                <span style="margin-right: 50px">
+                    <input type="button" class="btn btn-primary" value="Start" @click="start" />
+                </span>
+                <span>
+                    <input type="button" class="btn btn-primary" value="Close" @click="close" />
+                </span>
 
-              <div class="form-group">
-                <label for="isCommissionEnabled">Enable 2% Commission</label>
-                <input
-                        type="checkbox"
-                        class="form-control col-3"
-                        id="isCommissionEnabled"
-                        v-model="isCommissionEnabled"
-                />
-                <small
-                        id="isCommissionEnabledHelp"
-                        class="form-text text-muted"
-                >Enable 2% more tokens going to commission balance</small>
               </div>
-              <span style="margin-right: 50px">
-                  <input type="button" class="btn btn-primary" value="Start" @click="start" />
-              </span>
-              <span>
-                  <input type="button" class="btn btn-primary" value="Close" @click="close" />
-              </span>
-
-            </div>
-            <div class="col-6 right-separator">
-              <h4>Reset Simulation</h4>
-              <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
+              <div class="col-6 right-separator">
+                <h4>Reset Simulation</h4>
+                <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
+              </div>
             </div>
           </div>
+          <div class="col-12">
+            <div class="row">
+              <div class="col-6 right-separator">
+                <h4>Invest</h4>
+                <div class="form-group">
+                  <label for="daiInvestment">USD</label>
+                  <input
+                    type="text"
+                    class="form-control col-6"
+                    id="daiInvestment"
+                    v-model="daiInvestment"
+                  />
+                  <small
+                    id="daiInvestmentHelp"
+                    class="form-text text-muted"
+                  >How much USD you want to invest</small>
+                </div>
+
+                <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
+              </div>
+              <div class="col-6 right-separator">
+                <h4>Sell</h4>
+                <div class="form-group">
+                  <label for="mglSold">MGL</label>
+                  <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
+                  <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
+                </div>
+
+                <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+                <div class="row">
+                    <div class="col-6 right-separator">
+                        <h4>Burn</h4>
+                        <div class="form-group">
+                            <label for="burntSupply">MGL</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-6"
+                                    id="burntSupply"
+                                    v-model="mglToBurn"
+                            />
+                            <small
+                                    id="burntSupplyHelp"
+                                    class="form-text text-muted"
+                            >How much MGL you want to burn</small>
+                        </div>
+
+                        <input type="button" class="btn btn-primary" value="Burn" @click="burn" />
+                    </div>
+
+                    <div class="col-6 right-separator">
+                        <h4>Pay Dividend</h4>
+                        <div class="form-group">
+                            <label for="dividendPaid">USD</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-6"
+                                    id="dividendPaid"
+                                    v-model="dividendPaid"
+                            />
+                            <small
+                                    id="dividendPaidHelp"
+                                    class="form-text text-muted"
+                            >How much USD you want to pay as dividend</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="dividendRatio">Percent to Reserve (%)</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-3"
+                                    id="dividendRatio"
+                                    v-model="dividendRatio"
+                            />
+                            <small
+                                    id="dividendRatioHelp"
+                                    class="form-text text-muted"
+                            >What percent do you want to go to the reserve</small>
+                        </div>
+
+                        <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="col-12">
-          <div class="row">
-            <div class="col-6 right-separator">
-              <h4>Invest</h4>
-              <div class="form-group">
-                <label for="daiInvestment">USD</label>
-                <input
-                  type="text"
-                  class="form-control col-6"
-                  id="daiInvestment"
-                  v-model="daiInvestment"
-                />
-                <small
-                  id="daiInvestmentHelp"
-                  class="form-text text-muted"
-                >How much USD you want to invest</small>
-              </div>
-
-              <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
-            </div>
-            <div class="col-6 right-separator">
-              <h4>Sell</h4>
-              <div class="form-group">
-                <label for="mglSold">MGL</label>
-                <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
-                <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
-              </div>
-
-              <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
-            </div>
-          </div>
-        </div>
-        <div class="col-12">
-              <div class="row">
-                  <div class="col-6 right-separator">
-                      <h4>Burn</h4>
-                      <div class="form-group">
-                          <label for="burntSupply">MGL</label>
-                          <input
-                                  type="text"
-                                  class="form-control col-6"
-                                  id="burntSupply"
-                                  v-model="mglToBurn"
-                          />
-                          <small
-                                  id="burntSupplyHelp"
-                                  class="form-text text-muted"
-                          >How much MGL you want to burn</small>
-                      </div>
-
-                      <input type="button" class="btn btn-primary" value="Burn" @click="burn" />
-                  </div>
-
-                  <div class="col-6 right-separator">
-                      <h4>Pay Dividend</h4>
-                      <div class="form-group">
-                          <label for="dividendPaid">USD</label>
-                          <input
-                                  type="text"
-                                  class="form-control col-6"
-                                  id="dividendPaid"
-                                  v-model="dividendPaid"
-                          />
-                          <small
-                                  id="dividendPaidHelp"
-                                  class="form-text text-muted"
-                          >How much USD you want to pay as dividend</small>
-                      </div>
-                      <div class="form-group">
-                          <label for="dividendRatio">Percent to Reserve (%)</label>
-                          <input
-                                  type="text"
-                                  class="form-control col-3"
-                                  id="dividendRatio"
-                                  v-model="dividendRatio"
-                          />
-                          <small
-                                  id="dividendRatioHelp"
-                                  class="form-text text-muted"
-                          >What percent do you want to go to the reserve</small>
-                      </div>
-
-                      <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
-                  </div>
-              </div>
-          </div>
       </div>
-    </div>
+    </section>
+
+    <!-- FOOTER -->
+  <footer>
+    <div class="asterisk">*All prices are in USD/MGL</div>
+    <section class="general-details">
+      <div class="column-wrapper">
+        <div class="labels">
+          <label>MGL in Circulation: </label>
+          <label>Liquidity pool: </label>
+        </div>
+        <div class="data-fields">
+          <p>{{HRTotalMGL.toLocaleString()}}</p>
+          <p>${{HRReserveSupply.toLocaleString()}}</p>
+        </div>
+      </div>
+
+      <div class="column-wrapper">
+        <div class="labels">
+          <label>Total invested: </label>
+          <label>Investment fund: </label>
+        </div>
+        <div class="data-fields">
+          <p>{{HRTotalDAIInvested.toFixed(0).toLocaleString()}}M</p>
+          <p>{{HRInvestmentFund.toFixed(1).toLocaleString()}}M</p>
+        </div>
+      </div>
+    </section>
+  </footer>
   </div>
 </template>
 
@@ -768,16 +797,20 @@ export default Vue.extend({
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,700,700i&display=swap');
 
 $accent: #DBA628;
+$label: #696969;
 
 body {
   font-family: Lato;
-  background: #1c1c1b;
+  background: #1E1E1E;
   color: white;
   margin: 0;
 }
+header, footer {
+  background: #1c1c1b;
+}
 header {
   height: 93px;
-  margin-bottom: 0;
+  margin-bottom: 0 !important;
   box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2);
 }
 .logo {
@@ -858,6 +891,48 @@ header {
     transition: all 0.2s ease-out;
     fill: white;
   }
+}
+
+footer {
+  height: 80px;
+  box-shadow: 0 -2px 15px 0 rgba(0, 0, 0, 0.2);
+  font-size: 14px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  .general-details {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+  .asterisk {
+    position: absolute;
+    left: 28px;
+    top: 31px;
+    color: $label;
+  }
+  .column-wrapper {
+    display: flex;
+    flex-direction: row;
+    margin-right: 25px;
+    .labels {
+      display: flex;
+      flex-direction: column;
+      color: $label;
+      margin-right: 5px;
+      text-align: right;
+    }
+    .data-fields {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}
+
+.main-content {
+  height: calc(100vh - 173px);
+  overflow-y: scroll;
 }
 
 </style>
