@@ -1,0 +1,24 @@
+<svg width="10px" height="13px" viewBox="0 0 10 13" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <defs>
+        <rect id="path-1" x="0" y="0" width="1366" height="93"></rect>
+        <filter x="-1.7%" y="-23.1%" width="103.4%" height="150.5%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="2" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="7.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.168897509 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="app" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="[Public]-Simulator-secondary-market" transform="translate(-1324.000000, -43.000000)">
+            <g id="Header">
+                <g id="bg">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#1C1C1B" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <rect id="Rectangle" fill="#1C1C1B" x="1311" y="36" width="28" height="28" rx="3"></rect>
+                <g id="sim" transform="translate(1166.000000, 0.000000)" fill="#DBA628" fill-rule="nonzero">
+                    <polygon id="" points="158.014 55.761 167.611 49.65 158.014 43.539"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

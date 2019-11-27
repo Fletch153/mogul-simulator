@@ -1,15 +1,25 @@
 <template>
   <div class="mogul-corg">
+
+    <!-- HEADER -->
     <header class="level">
       <div class="level-left logo">
         <div class="logo-box"><MogulLogo /></div>
         <div class="heading">
-          <h1>Continuous organisation <HelpIcon class="help-header" /></h1>
+          <h1>Continuous organisation <HelpIcon class="help-header help-icon" /></h1>
           <p>Simulation</p>
         </div>
       </div>
-      <div class="level-left simulate"></div>
+      <div class="level-right simulate-wrapper">
+        <LineWideGraphic class="line-graphic line-02" />
+        <LineGraphic class="line-graphic line-01" />
+        <span>Simulate</span>
+        <PlayIcon class="play-icon" />
+      </div>
     </header>
+
+    <!-- CONTENT -->
+
     <div class="col-7 simulator">
       <div class="row">
         <div class="col-12">
@@ -261,6 +271,9 @@ import Vue from "vue";
 import CurveChart from "./CurveChart.vue";
 import MogulLogo from "../assets/mogul-logo.svg?inline";
 import HelpIcon from "../assets/question-mark.svg?inline";
+import LineGraphic from "../assets/simulate/line.svg?inline";
+import LineWideGraphic from "../assets/simulate/line-wide.svg?inline";
+import PlayIcon from "../assets/simulate/play.svg?inline";
 import numeral from "numeral";
 
 const DAI = 1000000000000000000; // 1 DAI
@@ -328,7 +341,10 @@ export default Vue.extend({
   components: {
     CurveChart,
     MogulLogo,
-    HelpIcon
+    HelpIcon,
+    LineGraphic,
+    LineWideGraphic,
+    PlayIcon
   },
   data() {
     return {
@@ -750,6 +766,9 @@ export default Vue.extend({
 
 <style lang="scss">
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,700,700i&display=swap');
+
+$accent: #DBA628;
+
 body {
   font-family: Lato;
   background: #1c1c1b;
@@ -793,6 +812,51 @@ header {
   }
   .help-header {
     margin-left: 11px;
+  }
+}
+
+.simulate-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding-left: 50px;
+  margin-right: 32px;
+  height: 93px;
+  position: relative;
+  cursor: pointer;
+    .line-graphic {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transition: all 0.3s ease-out;
+  }
+  &:hover {
+    .line-01 {
+      left: 120px;
+    }
+    .line-02 {
+      left: 50px;
+    }
+  }
+  span {
+    margin-right: 20px;
+    z-index: 2;
+    text-transform: uppercase;
+    color: $accent;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .play-icon {
+    z-index: 2;
+  }
+}
+
+.help-icon {
+  cursor: pointer;
+  &:hover path {
+    transition: all 0.2s ease-out;
+    fill: white;
   }
 }
 
