@@ -78,6 +78,12 @@
           </div>
         </div>
       </section>
+      <section class="chart-wrapper">
+
+      <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
+      <section class="administration-wrapper" v-bind:class="{ hidden: !settingsExpanded }"></section>
+      <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
+      </section>
     </main>
 
     <!-- FOOTER -->
@@ -120,6 +126,7 @@ import HelpIcon from "../assets/question-mark.svg?inline";
 import LineGraphic from "../assets/simulate/line.svg?inline";
 import LineWideGraphic from "../assets/simulate/line-wide.svg?inline";
 import PlayIcon from "../assets/simulate/play.svg?inline";
+import SettingsIcon from "../assets/settings.svg?inline";
 
 const DAI = 1000000000000000000; // 1 DAI
 const MGL = 1000000000000000000; // 1 MGL
@@ -189,7 +196,8 @@ export default Vue.extend({
     HelpIcon,
     LineGraphic,
     LineWideGraphic,
-    PlayIcon
+    PlayIcon,
+    SettingsIcon
   },
   data() {
     return {
@@ -277,10 +285,18 @@ export default Vue.extend({
       selectedCustomFields: [] as any,
       investValue: 0,
       sellValue: 0,
-      payValue: 0
+      payValue: 0,
+      settingsExpanded: false
     };
   },
   methods: {
+      toggleSettings(): void {
+    if (this.settingsExpanded) {
+        this.settingsExpanded = false;
+      } else {
+        this.settingsExpanded = true;
+      }
+    },
     start(): void {
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
@@ -778,6 +794,7 @@ footer {
 .main-content {
   height: calc(100vh - 173px);
   overflow: hidden;
+  display: flex;
   .actions-wrapper {
     max-width: 370px;
     height: 100%;
@@ -928,6 +945,52 @@ footer {
           }
         }
       }
+    }
+  }
+}
+
+.chart-wrapper {
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+  position: relative;
+  .overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    background: #191818;
+    opacity: 0.5;
+    transition: all 0.4s ease-out;
+    pointer-events: none;
+    z-index: 3;
+    &.hidden {
+      opacity: 0;
+    }
+  }
+  .administration-wrapper {
+    position: absolute;
+    right: -300px;
+    top: 0;
+    width: 300px;
+    padding: 20px;
+    height: 100%;
+    background: #191818;
+    transition: all 0.6s ease-out;
+    z-index: 4;
+    &.hidden {
+      right: 0;
+    }
+  }
+  .settings {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    z-index: 5;
+    cursor: pointer;
+    &.active path, &:hover path {
+      fill: white;
     }
   }
 }
