@@ -79,9 +79,8 @@
         </div>
       </section>
       <section class="chart-wrapper">
-
       <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
-      <section class="administration-wrapper" v-bind:class="{ hidden: !settingsExpanded }"></section>
+      <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded }"></section>
       <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
       </section>
     </main>
@@ -286,7 +285,7 @@ export default Vue.extend({
       investValue: 0,
       sellValue: 0,
       payValue: 0,
-      settingsExpanded: false
+      settingsExpanded: true
     };
   },
   methods: {
@@ -979,7 +978,7 @@ footer {
     background: #191818;
     transition: all 0.6s ease-out;
     z-index: 4;
-    &.hidden {
+    &.visible {
       right: 0;
     }
   }
