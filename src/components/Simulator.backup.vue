@@ -19,66 +19,251 @@
     </header>
 
     <!-- CONTENT -->
-    <main class="main-content">
-      <section class="actions-wrapper">
-        <div class="actions-list">
-          <div class="overall-wrapper">
-            <div class="data-item">
-              <h2 class="buy">${{HRBuyDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Buy</span> <HelpIcon class="help-icon" /></label>
-            </div>
-            <div class="data-item">
-              <h2 class="sell">${{HRSellDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Sell</span> <HelpIcon class="help-icon" /></label>
-            </div>
-          </div>
-          <div class="actions">
-            <div class="item">
-              <h3><strong>Invest</strong></h3>
-              <div class="wrapper">
-                  <div class="form-wrapper">
-                    <ul class="segmented-control">
-                      <li v-for="option in investOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
-                    </ul>
-                    <button class="common">Invest</button>
-                    <HelpIcon class="help-icon" />
-                  </div>
-                  <label>Millions</label>
-                  <input class="invest-input" name="invest-input" />
+    <section class="main-content">
+      <div class="col-7 simulator">
+        <div class="row">
+          <div class="col-12">
+            <div class="row">
+              <div class="col-12">
+                <h1>Simulation</h1>
+                <hr />
+                <h4>Prices</h4>
               </div>
-            </div>
-            <div class="item">
-              <h3><strong>Sell</strong></h3>
-              <div class="wrapper">
-                <div class="form-wrapper">
-                  <ul class="segmented-control">
-                    <li v-for="option in sellOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
-                  </ul>
-                  <button class="common">Sell</button>
-                  <HelpIcon class="help-icon" />
-                </div>
-                  <label>Millions</label>
-                  <input class="sell-input" name="sell-input" />
+              <!-- <div class="col-3">
+                Buy Price (MGL/USD): {{HRBuyMGLPerDAI}} MGL
+                <small
+                  class="form-text text-muted"
+                >How much MGL you are getting per 1 USD invested</small>
               </div>
-            </div>
-            <div class="item">
-              <h3><strong>Pay dividend</strong></h3>
-              <div class="wrapper">
-                <div class="form-wrapper">
-                  <ul class="segmented-control">
-                    <li v-for="option in payOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
-                  </ul>
-                  <button class="common">Pay</button>
-                  <HelpIcon class="help-icon" />
-                </div>
-                  <label>Millions</label>
-                  <input class="pay-input" name="pay-input" />
+              <div class="col-3">
+                Sell Price (MGL/USD): {{ HRSellMGLperDAI }} MGL
+                <small
+                  class="form-text text-muted"
+                >How much MGL you should send to receive 1 USD</small>
+              </div>-->
+              <div class="col-3">
+                Buy Price (USD/MGL): {{HRBuyDAIPerMGL}} USD
+                <small
+                  class="form-text text-muted"
+                >How much USD you need to send to receive 1 MGL</small>
               </div>
+              <div class="col-3">
+                Sell Price (USD/MGL): {{ HRSellDAIPerMGL }} USD
+                <small
+                  class="form-text text-muted"
+                >How much USD you are going to receive for the next 1 MGL sold</small>
+              </div>
+              <div class="col-12">
+                <hr />
+              </div>
+              <div class="col-12">
+                <h4>Prices Charts</h4>
+              </div>
+
+              <div class="col-12 chart-div">
+                <CurveChart :chart-data="historyChartDataset" :options="historyChartOptions" />
+              </div>
+
+              <div class="col-12 chart-div">
+                <CurveChart :chart-data="chartsDataset" :options="chartOptions" />
+              </div>
+              <div class="col-12">
+                <hr />
+              </div>
+              <div class="col-12">
+                <h4>Simulation details</h4>
+              </div>
+              <div class="col-12">Reserve ratio: {{reserveRatio}}%</div>
+              <div class="col-6">MGL in Circulation: {{HRTotalMGL.toLocaleString()}}</div>
+              <div class="col-6">USD invested: {{HRTotalDAIInvested.toLocaleString()}}</div>
+              <div class="col-6">Mogul Investment Fund: {{HRInvestmentFund.toLocaleString()}}</div>
+              <div class="col-6">Buy-back reserve: {{HRReserveSupply.toLocaleString()}}</div>
+              <div class="col-6">Commission Enabled: {{isCommissionEnabled}}</div>
+              <div class="col-6">Commission Balance: {{HRCommissionBalance.toLocaleString()}}</div>
+              <div class="col-6">Burnt Supply: {{HRBurntSupply.toLocaleString()}}</div>
+              <br />
+              <br />
             </div>
           </div>
         </div>
-      </section>
-    </main>
+      </div>
+      <div class="col-5 simulator">
+        <div class="row">
+          <div class="col-12">
+            <h1>Actions</h1>
+            <div class="row">
+              <div class="col-6 right-separator">
+                <h4>Initial investment</h4>
+                <div class="form-group">
+                  <label for="premintedMGL">Preminted MGL</label>
+                  <input
+                    type="text"
+                    class="form-control col-6"
+                    id="premintedMGL"
+                    v-model="premintedMGL"
+                  />
+                  <small
+                    id="premintedMGLHelp"
+                    class="form-text text-muted"
+                  >How much MGL you want to premint</small>
+                </div>
+                <div class="form-group">
+                  <label for="initialDAIInvestment">Initial USD Investment</label>
+                  <input
+                    type="text"
+                    class="form-control col-6"
+                    id="initialDAIInvestment"
+                    v-model="initialDAIInvestment"
+                  />
+                  <small
+                    id="initialDAIInvestmentHelp"
+                    class="form-text text-muted"
+                  >How much USD you will invest in the beginning</small>
+                </div>
+                <div class="form-group">
+                  <label for="reserveRatio">Reserve Ratio (%)</label>
+                  <input
+                    type="text"
+                    class="form-control col-3"
+                    id="reserveRatio"
+                    v-model="reserveRatio"
+                  />
+                  <small
+                    id="reserveRatioHelp"
+                    class="form-text text-muted"
+                  >What % of each investment goes to the reserve</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="buySlopeMultiplier">Buy Slope Multiplier</label>
+                    <input
+                      type="number"
+                      class="form-control col-3"
+                      id="buySlopeMultiplier"
+                      v-model="buySlopeMultiplier"
+                    />
+                    <small
+                            id="buySlopeMultiplierHelp"
+                            class="form-text text-muted"
+                    >The higher the buy slope is, the more value unit tokens will have</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="isCommissionEnabled">Enable 2% Commission</label>
+                  <input
+                          type="checkbox"
+                          class="form-control col-3"
+                          id="isCommissionEnabled"
+                          v-model="isCommissionEnabled"
+                  />
+                  <small
+                          id="isCommissionEnabledHelp"
+                          class="form-text text-muted"
+                  >Enable 2% more tokens going to commission balance</small>
+                </div>
+                <span style="margin-right: 50px">
+                    <input type="button" class="btn btn-primary" value="Start" @click="start" />
+                </span>
+                <span>
+                    <input type="button" class="btn btn-primary" value="Close" @click="close" />
+                </span>
+
+              </div>
+              <div class="col-6 right-separator">
+                <h4>Reset Simulation</h4>
+                <input type="button" class="btn btn-warning" value="Reset" @click="reset" />
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="row">
+              <div class="col-6 right-separator">
+                <h4>Invest</h4>
+                <div class="form-group">
+                  <label for="daiInvestment">USD</label>
+                  <input
+                    type="text"
+                    class="form-control col-6"
+                    id="daiInvestment"
+                    v-model="daiInvestment"
+                  />
+                  <small
+                    id="daiInvestmentHelp"
+                    class="form-text text-muted"
+                  >How much USD you want to invest</small>
+                </div>
+
+                <input type="button" class="btn btn-primary" value="Invest" @click="invest" />
+              </div>
+              <div class="col-6 right-separator">
+                <h4>Sell</h4>
+                <div class="form-group">
+                  <label for="mglSold">MGL</label>
+                  <input type="text" class="form-control col-6" id="mglSold" v-model="mglSold" />
+                  <small id="mglSoldHelp" class="form-text text-muted">How much MGL you want to sell</small>
+                </div>
+
+                <input type="button" class="btn btn-primary" value="Sell" @click="sell" />
+              </div>
+            </div>
+          </div>
+          <div class="col-12">
+                <div class="row">
+                    <div class="col-6 right-separator">
+                        <h4>Burn</h4>
+                        <div class="form-group">
+                            <label for="burntSupply">MGL</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-6"
+                                    id="burntSupply"
+                                    v-model="mglToBurn"
+                            />
+                            <small
+                                    id="burntSupplyHelp"
+                                    class="form-text text-muted"
+                            >How much MGL you want to burn</small>
+                        </div>
+
+                        <input type="button" class="btn btn-primary" value="Burn" @click="burn" />
+                    </div>
+
+                    <div class="col-6 right-separator">
+                        <h4>Pay Dividend</h4>
+                        <div class="form-group">
+                            <label for="dividendPaid">USD</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-6"
+                                    id="dividendPaid"
+                                    v-model="dividendPaid"
+                            />
+                            <small
+                                    id="dividendPaidHelp"
+                                    class="form-text text-muted"
+                            >How much USD you want to pay as dividend</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="dividendRatio">Percent to Reserve (%)</label>
+                            <input
+                                    type="text"
+                                    class="form-control col-3"
+                                    id="dividendRatio"
+                                    v-model="dividendRatio"
+                            />
+                            <small
+                                    id="dividendRatioHelp"
+                                    class="form-text text-muted"
+                            >What percent do you want to go to the reserve</small>
+                        </div>
+
+                        <input type="button" class="btn btn-primary" value="Pay" @click="payDividend" />
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </section>
 
     <!-- FOOTER -->
   <footer>
@@ -112,14 +297,13 @@
 
 <script lang="ts">
 import Vue from "vue";
-import numeral from "numeral";
 import CurveChart from "./CurveChart.vue";
-// svg graphics
 import MogulLogo from "../assets/mogul-logo.svg?inline";
 import HelpIcon from "../assets/question-mark.svg?inline";
 import LineGraphic from "../assets/simulate/line.svg?inline";
 import LineWideGraphic from "../assets/simulate/line-wide.svg?inline";
 import PlayIcon from "../assets/simulate/play.svg?inline";
+import numeral from "numeral";
 
 const DAI = 1000000000000000000; // 1 DAI
 const MGL = 1000000000000000000; // 1 MGL
@@ -255,29 +439,7 @@ export default Vue.extend({
             }
           ]
         }
-      },
-      investOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'invest', selected: true }
-      ],
-      sellOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'sell', selected: true }
-      ],
-      payOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'pay', selected: true }
-      ],
-      selectedCustomFields: [] as any,
-      investValue: 0,
-      sellValue: 0,
-      payValue: 0
+      }
     };
   },
   methods: {
@@ -446,11 +608,6 @@ export default Vue.extend({
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
       this.historicalBuyPrices = new Array<string>();
-    },
-    onSelect(optionsSelected: any) {
-        if (optionsSelected.label === 'Custom' && this.selectedCustomFields.indexOf(optionsSelected.value) === -1) {
-          this.selectedCustomFields.push(optionsSelected.value)
-        }
     }
   },
   computed: {
@@ -640,8 +797,6 @@ export default Vue.extend({
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,700,700i&display=swap');
 
 $accent: #DBA628;
-$primary: #64B7F4;
-$secondary: #71D69B;
 $label: #696969;
 
 body {
@@ -777,159 +932,7 @@ footer {
 
 .main-content {
   height: calc(100vh - 173px);
-  overflow: hidden;
-  .actions-wrapper {
-    max-width: 370px;
-    height: 100%;
-    padding: 20px;
-    background: #191818;
-    display: flex;
-    overflow: auto;
-    .actions-list {
-      display: flex;
-      flex-direction: column;
-      flex-basis: 100%;
-    }
-    .overall-wrapper {
-      margin: 15px 0 40px;
-      display: flex;
-      flex-direction: row;
-      justify-content: center;
-      align-items: center;
-      .data-item {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        &:not(:last-of-type) {
-          margin-right: 15px;
-        }
-        h2 {
-          font-size: 34px;
-          line-height: 34px;
-          font-weight: 700;
-          margin-bottom: 2px; 
-          &.buy {
-            color: $primary;
-          }
-          &.sell {
-            color: $secondary;
-          }
-        }
-        label {
-          text-transform: uppercase;
-          color: #656565;
-          font-size: 14px;
-          font-weight: 700;
-          display: flex;
-          align-items: center;
-          justify-content: flex-end;
-        }
-        .help-icon {
-          margin-left: 5px;
-        }
-      }
-    }
-  }
-  .actions {
-    display: flex;
-    flex-direction: column;
-    .item {
-      margin-bottom: 45px;
-      h3 {
-        display: block;
-        border-bottom: 1px solid #2D2D2D;
-        color: #565656;
-        font-size: 14px;
-        font-weight: 700;
-        text-transform: uppercase;
-        position: relative;
-        strong {
-          background: #191818;
-          padding: 8px;
-          position: relative;
-          bottom: -5px;
-          color: #565656;
-        }
-      }
-      .wrapper {
-        display: flex;
-        flex-direction: column;
-        margin-top: 20px;
-        .form-wrapper {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          .segmented-control {
-            display: flex;
-            flex-direction: row;
-            padding: 0;
-            list-style-type: none;
-            overflow: hidden;
-            font-size: 14px;
-            font-weight: 700;
-            color: white;
-            border-radius: 13px;
-            border: 1px solid #2B2B2B;
-            margin-right: 12px;
-            li {
-              padding: 8px 16px;
-              cursor: not-allowed;
-              &:not(:last-of-type) {
-                border-right: 1px solid #2b2b2b;
-              }
-              &.active {
-                background: #2b2b2b;
-                font-weight: 700;
-                cursor: pointer;
-              }
-            }
-          }
-          button {
-            font-family: Lato;
-            background: $accent;
-            padding: 7px 0;
-            width: 76px;
-            color: #1E1C15;
-            font-size: 15px;
-            font-weight: 700;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            outline: none;
-            margin-right: 12px;
-            box-shadow: 0 4px 10px rgba(219, 166, 44, 0.3);
-            transition: all 0.2s ease-out;
-            &:hover {
-              background: #EBBA47;
-              box-shadow: 0 4px 15px rgba(219, 166, 44, 0.4);
-            }
-          }
-        }
-        label {
-          font-size: 12px;
-          font-weight: 400;
-          color: #A4A4A4;
-          margin: 7px 0 18px 80px;
-        }
-        input {
-          background: transparent;
-          border: 1px solid #2B2B2B;
-          padding: 8px 13px;
-          color: white;
-          font-weight: 700;
-          font-size: 15px;
-          max-width: 214px;
-          border-radius: 4px;
-          outline: none;
-          transition: all 0.3s ease-out;
-          &:hover, &:focus {
-            border: 1px solid rgba(219, 166, 44, 0.5);
-            box-shadow: 0 0 6px 2px rgba(219, 166, 44, 0.2);
-          }
-        }
-      }
-    }
-  }
+  overflow-y: scroll;
 }
 
 </style>

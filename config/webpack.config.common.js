@@ -32,7 +32,7 @@ const webpackConfig = {
       {
         test: /\.vue$/,
         loader: "vue-loader",
-        include: [helpers.root("src")],
+        include: [helpers.root("src"), /node_modules/],
         options: {
           appendTsSuffixTo: [/\.ts$/]
         }
@@ -40,6 +40,7 @@ const webpackConfig = {
       {
         test: /\.js$/,
         loader: "babel-loader",
+        exclude: /node_modules/,
         include: [helpers.root("src")]
       },
       {
