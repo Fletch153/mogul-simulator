@@ -104,6 +104,7 @@
           <div class="param-actions-wrapper">
             <button class="primary" @click="start">Start</button>
             <button class="secondary" @click="close">Close</button>
+            <button class="secondary" @click="reset">Reset</button>
           </div>
         </section>
         <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
@@ -247,6 +248,7 @@ export default Vue.extend({
       historicalBuyPrices: new Array<string>(),
       commissionBalance: 0,
       isCommissionEnabled: false,
+      commission: 2,
       isOrganisationClosed: false,
       chartOptions: {
         responsive: true,
@@ -395,14 +397,11 @@ export default Vue.extend({
       this.reserveSupply += investment * this.reserveRatioDecimal;
       this.investmentFund += investment * (1 - this.reserveRatioDecimal);
       this.totalMGL += mglMinted;
+      const commissionMgl = mglMinted * this.commission / 100;
+      this.totalMGL += commissionMgl;
+      this.commissionBalance += commissionMgl;
 
-      if (this.isCommissionEnabled) {
-        const commissionMgl = mglMinted * 2 / 100;
-        this.totalMGL += commissionMgl;
-        this.commissionBalance += commissionMgl;
-      }
-
-      const investmentNumeral = numeral(this.daiInvestment).format("0.0a");
+      const investmentNumeral = numeral(this.daiInvestment).format("0.0A");
       this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
@@ -667,10 +666,12 @@ export default Vue.extend({
       const datasets = [
         {
           name: 'Buy',
+          type: 'area',
           data: this.historicalBuyPrices
         },
         {
           name: 'Sell',
+          type: 'line',
           data: this.historicalSellPrices
         }
       ];
@@ -701,7 +702,7 @@ export default Vue.extend({
         },
         {
           label: 'Commission',
-          value: this.isCommissionEnabled,
+          value: this.commission,
           id: 'isCommissionEnabled'
         },
       ]
@@ -714,9 +715,9 @@ export default Vue.extend({
         fill: {
           type: 'gradient',
             gradient: {
-              shadeIntensity: 1,
-              opacityFrom: 0.7,
-              opacityTo: 0.2,
+              shadeIntensity: 0,
+              opacityFrom: 0.6,
+              opacityTo: 0,
               stops: [0, 90, 100]
             }
         },
@@ -1250,11 +1251,13 @@ footer {
         background: #191818;
         border: 2px solid $accent;
         color: $accent;
-        margin-right: 0;
         &:hover {
           background: #191818;
           border-color: $accent-lighten-10;
         }
+      }
+      button:last-of-type {
+        margin-right: 0;
       }
     }
   }
