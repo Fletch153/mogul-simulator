@@ -24,11 +24,11 @@
   "dependencies": {
     "@babel/polyfill": "~7.2",
     "@types/numeral": "^0.0.26",
+    "apexcharts": "^3.10.1",
     "buefy": "^0.8.8",
-    "chart.js": "^2.9.3",
     "numeral": "^2.0.6",
     "vue": "~2.6",
-    "vue-chartjs": "^3.5.0",
+    "vue-apexcharts": "^1.5.1",
     "vue-router": "~3.0"
   },
   "devDependencies": {

@@ -40,11 +40,14 @@
                     <ul class="segmented-control">
                       <li v-for="option in investOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
                     </ul>
-                    <button class="common">Invest</button>
+                    <button class="common" @click="invest">Invest</button>
                     <HelpIcon class="help-icon" />
                   </div>
                   <label>Millions</label>
-                  <input class="invest-input" name="invest-input" />
+                  <div class="input-wrapper">
+                    <input class="usd-label" v-model="daiInvestment" />
+                    <span>USD</span>
+                  </div>
               </div>
             </div>
             <div class="item">
@@ -54,11 +57,14 @@
                   <ul class="segmented-control">
                     <li v-for="option in sellOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
                   </ul>
-                  <button class="common">Sell</button>
+                  <button class="common" @click="sell">Sell</button>
                   <HelpIcon class="help-icon" />
                 </div>
                   <label>Millions</label>
-                  <input class="sell-input" name="sell-input" />
+                  <div class="input-wrapper">
+                    <input class="mgl-label" v-model="mglSold" />
+                    <span>MGL</span>
+                  </div>
               </div>
             </div>
             <div class="item">
@@ -68,20 +74,39 @@
                   <ul class="segmented-control">
                     <li v-for="option in payOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
                   </ul>
-                  <button class="common">Pay</button>
+                  <button class="common" @click="payDividend">Pay</button>
                   <HelpIcon class="help-icon" />
                 </div>
                   <label>Millions</label>
-                  <input class="pay-input" name="pay-input" />
+                  <div class="input-wrapper">
+                    <input class="usd-label" v-model="dividendPaid" />
+                    <span>USD</span>
+                  </div>
               </div>
             </div>
           </div>
         </div>
       </section>
       <section class="chart-wrapper">
-      <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
-      <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded }"></section>
-      <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
+        <apexchart width=100% height=100% type="area" :series="historyChartDataset" :options="historyChartOptions" />
+        <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
+        <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded }">
+          <h2>Parameter settings</h2>
+          <ul class="parameters-wrapper">
+            <li v-for="(param, index) in params" v-bind:key="index" class="level">
+              <label class="level-left" v-bind:for="param.id">{{param.label}}</label>
+              <div class="level-right inputs">
+                <input size="9" v-bind:id="param.id" v-model="param.value" v-bind:class="param.id" />
+                <span v-bind:class="param.id">%</span>
+              </div>
+            </li>
+          </ul>
+          <div class="param-actions-wrapper">
+            <button class="primary" @click="start">Start</button>
+            <button class="secondary" @click="close">Close</button>
+          </div>
+        </section>
+        <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
       </section>
     </main>
 
@@ -118,7 +143,7 @@
 <script lang="ts">
 import Vue from "vue";
 import numeral from "numeral";
-import CurveChart from "./CurveChart.vue";
+import VueApexCharts from 'vue-apexcharts'
 // svg graphics
 import MogulLogo from "../assets/mogul-logo.svg?inline";
 import HelpIcon from "../assets/question-mark.svg?inline";
@@ -187,10 +212,12 @@ const sellCalc = (
   // return reserveSupply * b;
 };
 
+Vue.component('apexchart', VueApexCharts)
+
 export default Vue.extend({
   name: "Simulator",
   components: {
-    CurveChart,
+    VueApexCharts,
     MogulLogo,
     HelpIcon,
     LineGraphic,
@@ -207,9 +234,9 @@ export default Vue.extend({
       mglToBurn: 0,
       reserveRatio: 20,
       reserveSupply: 0,
-      buySlopeMultiplier: 10,
+      buySlopeMultiplier: 4,
       investmentFund: 0,
-      premintedMGL: 60000000,
+      premintedMGL: 36000000,
       initialDAIInvestment: 3000000,
       daiInvestment: 0,
       mglSold: 0,
@@ -244,23 +271,34 @@ export default Vue.extend({
                 }
               }
             }
-          ]
-        }
-      },
-      historyChartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          yAxes: [
-            {
-              ticks: {
-                // Include a dollar sign in the ticks
-                callback: (value: string, index: any, values: any) => {
-                  return `$${value}`;
-                }
-              }
+          ],
+          legend: {
+            position: 'top',
+            labels: {
+              fontColor: 'white'
             }
-          ]
+          },
+          title: {
+            display: true,
+            text: 'Chart.js Radar Chart',
+            fontColor: 'white'
+          },
+          scale: {
+            ticks: {
+              beginAtZero: true,
+              fontColor: 'white',
+              showLabelBackdrop: false
+            },
+            pointLabels: {
+              fontColor: 'white'
+            },
+            gridLines: {
+              color: 'rgba(255, 255, 255, 0.2)'
+            },
+            angleLines: {
+              color: 'white'
+            }
+          }
         }
       },
       investOptions: [
@@ -308,12 +346,13 @@ export default Vue.extend({
       this.historicalEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
       this.historicalBuyPrices = new Array<string>();
-      this.historicalEvents.push(`Before start`);
       this.historicalSellPrices.push(`0`);
       this.historicalBuyPrices.push(`0`);
-      this.historicalEvents.push(`Start CORG`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+      this.historicalEvents.push('Series A');
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+      this.historicalEvents.push(`Invested $${(this.initialDAIInvestment / 1000000).toFixed(1)}M`);
+      this.settingsExpanded = false;
     },
     close(): void {
       const tax = this.totalDaiInvested;
@@ -364,9 +403,9 @@ export default Vue.extend({
       }
 
       const investmentNumeral = numeral(this.daiInvestment).format("0.0a");
-      this.historicalEvents.push(`Invested $${investmentNumeral}`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+      this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
     },
 
     sell(): void {
@@ -406,10 +445,10 @@ export default Vue.extend({
       this.reserveSupply -= daiReturned;
       this.totalDAI -= daiReturned;
 
-      const sellNumeral = numeral(this.mglSold).format("0.0a");
+      const sellNumeral = numeral(this.mglSold).format("0.0A");
       this.historicalEvents.push(`Sold ${sellNumeral} MGL`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
     },
 
     burn(): void {
@@ -437,10 +476,10 @@ export default Vue.extend({
       this.reserveSupply += dividend * this.dividendRatioDecimal;
       this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-      const dividendNumeral = numeral(this.dividendPaid).format("0.0a");
-      this.historicalEvents.push(`Dividend $${dividendNumeral}`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
+      const dividendNumeral = numeral(this.dividendPaid).format("0.0A");
+      this.historicalEvents.push(`Sold $${this.dividendPaid}`);
+      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
     },
 
     reset(): void {
@@ -494,7 +533,7 @@ export default Vue.extend({
     },
 
     HRTotalDAIInvested(): number {
-      return this.totalDaiInvested / DAI;
+      return this.totalDaiInvested / DAI / 1000000;
     },
 
     HRReserveSupply(): number {
@@ -502,7 +541,7 @@ export default Vue.extend({
     },
 
     HRInvestmentFund(): number {
-      return this.investmentFund / DAI;
+      return this.investmentFund / DAI / 1000000;
     },
 
     HRBuyMGLPerDAI(): number {
@@ -602,7 +641,7 @@ export default Vue.extend({
 
     chartsDataset(): any {
       const datasets = {
-        labels: this.chartLabels,
+        labels: this.historicalEvents,
         datasets: [
           {
             label: "Buy Curve",
@@ -625,27 +664,153 @@ export default Vue.extend({
     },
 
     historyChartDataset(): any {
-      const datasets = {
-        labels: this.historicalEvents,
-        datasets: [
-          {
-            label: "Buy Curve",
-            data: this.historicalBuyPrices,
-            fill: false,
-            borderColor: "rgb(75, 192, 192)",
-            lineTension: 0.1
-          },
-          {
-            label: "Sell Curve",
-            data: this.historicalSellPrices,
-            fill: true,
-            borderColor: "#f87979",
-            backgroundColor: "rgba(248,121,121,0.05)",
-            lineTension: 0.1
-          }
-        ]
-      };
+      const datasets = [
+        {
+          name: 'Buy',
+          data: this.historicalBuyPrices
+        },
+        {
+          name: 'Sell',
+          data: this.historicalSellPrices
+        }
+      ];
       return datasets;
+    },
+    params(): any {
+      return [
+        {
+          label: 'MGL',
+          value: this.premintedMGL,
+          id: 'premintedMGL'
+        },
+        {
+          label: 'Initial USD Investment',
+          value: this.initialDAIInvestment,
+          id: 'initialDAIInvestment',
+
+        },
+        {
+          label: 'Reserve ratio',
+          value: this.reserveRatio,
+          id: 'reserveRatio'
+        },
+        {
+          label: 'Buy slope multiplier',
+          value: this.buySlopeMultiplier,
+          id: 'buySlopeMultiplier'
+        },
+        {
+          label: 'Commission',
+          value: this.isCommissionEnabled,
+          id: 'isCommissionEnabled'
+        },
+      ]
+    },
+    historyChartOptions(): any {
+      return {
+        theme: {
+          mode: 'dark'
+        },
+        fill: {
+          type: 'gradient',
+            gradient: {
+              shadeIntensity: 1,
+              opacityFrom: 0.7,
+              opacityTo: 0.2,
+              stops: [0, 90, 100]
+            }
+        },
+        chart: {
+          id: 'curve-chart',
+          background: '#1E1E1E',
+          animations: {
+            enabled: true,
+            easing: 'easeinout',
+            speed: 800,
+            animateGradually: {
+                enabled: true,
+                delay: 150
+            },
+            dynamicAnimation: {
+                enabled: true,
+                speed: 350
+            }
+          },
+          fontFamily: 'Lato',
+          foreColor: '#8B8B8B'
+        },
+        grid: {
+          show: true,
+          borderColor: '#373737',
+          strokeDashArray: 0,
+        },
+        xaxis: {
+          categories: this.historicalEvents
+        },
+        markers: {
+          size: 5,
+          colors: undefined,
+          fillOpacity: 1,
+          strokeWidth: 0,
+          discrete: [],
+          shape: "circle",
+          radius: 11,
+          offsetX: 0,
+          offsetY: 0,
+          onClick: undefined,
+          onDblClick: undefined,
+          hover: {
+            size: 6,
+            sizeOffset: 3,
+            strokeWidth: 3,
+            strokeColor: '#b1b1b1',
+          }
+        },
+        stroke: {
+          show: true,
+          curve: 'smooth',
+          lineCap: 'butt',
+          width: 5
+        },
+        legend: {
+          show: true,
+          fontSize: '15px',
+          fontFamily: 'Lato',
+          formatter: undefined,
+          inverseOrder: false,
+          width: undefined,
+          height: undefined,
+          tooltipHoverFormatter: undefined,
+          offsetX: 0,
+          offsetY: 0,
+          labels: {
+              colors: undefined,
+              useSeriesColors: false
+          },
+          markers: {
+              width: 10,
+              height: 10,
+              strokeWidth: 0,
+              strokeColor: '#fff',
+              fillColors: undefined,
+              radius: 12,
+              customHTML: undefined,
+              onClick: undefined,
+              offsetX: 0,
+              offsetY: 0
+          },
+          itemMargin: {
+              horizontal: 20,
+              vertical: 5
+          },
+          onItemClick: {
+              toggleDataSeries: true
+          },
+          onItemHover: {
+              highlightDataSeries: true
+          }
+        }
+      }
     }
   }
 });
@@ -655,6 +820,7 @@ export default Vue.extend({
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,700,700i&display=swap');
 
 $accent: #DBA628;
+$accent-lighten-10: #EBBA47;
 $primary: #64B7F4;
 $secondary: #71D69B;
 $label: #696969;
@@ -916,7 +1082,7 @@ footer {
             box-shadow: 0 4px 10px rgba(219, 166, 44, 0.3);
             transition: all 0.2s ease-out;
             &:hover {
-              background: #EBBA47;
+              background: $accent-lighten-10;
               box-shadow: 0 4px 15px rgba(219, 166, 44, 0.4);
             }
           }
@@ -927,10 +1093,22 @@ footer {
           color: #A4A4A4;
           margin: 7px 0 18px 80px;
         }
+        .input-wrapper {
+          position: relative;
+          span {
+            position: absolute;
+            top: 6px;
+            left: 10px;
+            color: #565656;
+            font-size: 16px;
+          }
+        }
         input {
+          font-family: Lato;
           background: transparent;
           border: 1px solid #2B2B2B;
-          padding: 8px 13px;
+          padding: 8px 13px 8px 50px;
+          text-align: right;  
           color: white;
           font-weight: 700;
           font-size: 15px;
@@ -953,6 +1131,13 @@ footer {
   flex-grow: 1;
   height: 100%;
   position: relative;
+  overflow: hidden;
+  padding: 100px;
+  > div {
+    display: flex;
+    flex: 1 0 80%;
+    align-self: center;
+  }
   .overlay {
     position: absolute;
     left: 0;
@@ -976,17 +1161,108 @@ footer {
     padding: 20px;
     height: 100%;
     background: #191818;
-    transition: all 0.6s ease-out;
-    z-index: 4;
+    transition: all 0.7s cubic-bezier(.85,.01,.38,1);
+    z-index: 20;
     &.visible {
       right: 0;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 50px;
+    }
+    ul {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      li {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+        margin-bottom: 50px;
+        label {
+          font-size: 16px;
+        }
+        .inputs {
+          justify-content: flex-end;
+          display: flex;
+          align-items: flex-end;
+        }
+        input {
+          width: auto;
+          font-family: Lato;
+          font-weight: 700;
+          padding: 7px 7px 3px;
+          color: $accent;
+          text-align: right;
+          background: #191818;
+          display: flex;
+          flex: 0 1 auto;
+          font-size: 16px;
+          border: none;
+          outline: none;
+          transition: color 0.3s ease-out;
+          align-self: flex-end;
+          &:focus, &:hover {
+            color: $accent-lighten-10;
+          }
+        }
+        span {
+          font-size: 16px;
+          margin-left: -4px;
+          color: $accent;
+          font-weight: 700;
+          display: flex;
+          flex: 0 0 auto;
+        }
+        span.premintedMGL, span.initialDAIInvestment, span.buySlopeMultiplier {
+          display: none;
+        }
+      }
+    }
+    .param-actions-wrapper {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      button {
+        font-family: Lato;
+        background: $accent;
+        padding: 7px 0;
+        width: 76px;
+        color: #1E1C15;
+        font-size: 15px;
+        font-weight: 700;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        margin-right: 12px;
+        box-shadow: 0 4px 10px rgba(219, 166, 44, 0.3);
+        transition: all 0.2s ease-out;
+        &:hover {
+          background: $accent-lighten-10;
+          box-shadow: 0 4px 15px rgba(219, 166, 44, 0.4);
+        }
+      }
+      button.secondary {
+        background: #191818;
+        border: 2px solid $accent;
+        color: $accent;
+        margin-right: 0;
+        &:hover {
+          background: #191818;
+          border-color: $accent-lighten-10;
+        }
+      }
     }
   }
   .settings {
     position: absolute;
     right: 20px;
     top: 20px;
-    z-index: 5;
+    z-index: 21;
     cursor: pointer;
     &.active path, &:hover path {
       fill: white;
