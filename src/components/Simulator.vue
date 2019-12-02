@@ -132,8 +132,8 @@
           <label>Investment fund: </label>
         </div>
         <div class="data-fields">
-          <p>{{HRTotalDAIInvested.toFixed(0).toLocaleString()}}M</p>
-          <p>{{HRInvestmentFund.toFixed(1).toLocaleString()}}M</p>
+          <p>${{HRTotalDAIInvested.toFixed(0).toLocaleString()}}M</p>
+          <p>${{HRInvestmentFund.toFixed(1).toLocaleString()}}M</p>
         </div>
       </div>
     </section>
@@ -247,62 +247,8 @@ export default Vue.extend({
       historicalSellPrices: new Array<string>(),
       historicalBuyPrices: new Array<string>(),
       commissionBalance: 0,
-      isCommissionEnabled: false,
       commission: 2,
       isOrganisationClosed: false,
-      chartOptions: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          yAxes: [
-            {
-              ticks: {
-                // Include a dollar sign in the ticks
-                callback: (value: string, index: any, values: any) => {
-                  return `$${value}`;
-                }
-              }
-            }
-          ],
-          xAxes: [
-            {
-              ticks: {
-                // Include a dollar sign in the ticks
-                callback: (value: string, index: any, values: any) => {
-                  return `${value} MGL`;
-                }
-              }
-            }
-          ],
-          legend: {
-            position: 'top',
-            labels: {
-              fontColor: 'white'
-            }
-          },
-          title: {
-            display: true,
-            text: 'Chart.js Radar Chart',
-            fontColor: 'white'
-          },
-          scale: {
-            ticks: {
-              beginAtZero: true,
-              fontColor: 'white',
-              showLabelBackdrop: false
-            },
-            pointLabels: {
-              fontColor: 'white'
-            },
-            gridLines: {
-              color: 'rgba(255, 255, 255, 0.2)'
-            },
-            angleLines: {
-              color: 'white'
-            }
-          }
-        }
-      },
       investOptions: [
         { label: 1, value: 1, selected: false },
         { label: 5, value: 5, selected: false },
@@ -330,11 +276,7 @@ export default Vue.extend({
   },
   methods: {
       toggleSettings(): void {
-    if (this.settingsExpanded) {
-        this.settingsExpanded = false;
-      } else {
-        this.settingsExpanded = true;
-      }
+        this.settingsExpanded = !this.settingsExpanded;
     },
     start(): void {
       this.totalMGL = this.premintedMGL * MGL;
@@ -678,12 +620,32 @@ export default Vue.extend({
         {
           label: 'Commission',
           value: this.commission,
-          id: 'isCommissionEnabled'
+          id: 'commission'
         },
       ]
     },
     historyChartOptions(): any {
       return {
+            dataLabels: {
+            enabled: true,
+            enabledOnSeries: undefined,
+            formatter: function (value:any) {
+                return `$${value}`
+            },
+            textAnchor: 'middle',
+            style: {
+                fontSize: '13px',
+                fontFamily: 'Lato',
+                colors: undefined
+            },
+            dropShadow: {
+                enabled: true,
+                top: 1,
+                left: 1,
+                blur: 1,
+                opacity: 0.05
+            }
+        },
         colors: ['#64B7F4','#71D69B'],
         theme: {
           mode: 'dark'
@@ -714,15 +676,66 @@ export default Vue.extend({
             }
           },
           fontFamily: 'Lato',
-          foreColor: '#8B8B8B'
+          foreColor: '#8B8B8B',
+          toolbar: {
+            show: false
+          }
         },
         grid: {
           show: true,
-          borderColor: '#373737',
-          strokeDashArray: 0,
+          borderColor: '#31312F',
+          strokeDashArray: 1,
+          yaxis: {
+            lines: {
+              show: true
+            }
+          },
+          xaxis: {
+            lines: {
+              show: true
+            }
+          }
         },
         xaxis: {
-          categories: this.historicalEvents
+          categories: this.historicalEvents,
+          hideOverlappingLabels: true,
+          axisBorder: {
+            show: false
+          },
+          labels: {
+            style: {
+              color: '#8B8B8B',
+              fontSize: '14px',
+              fontFamily: 'Lato'
+            }
+          },
+          tooltip: {
+            enabled: false
+          },
+          crosshairs: {
+            show: true,
+            width: 1,
+            position: 'back',
+            opacity: 0.2,        
+            stroke: {
+              color: '#7B7B7B',
+              width: 1,
+              dashArray: 4
+            }
+          },
+        },
+        yaxis: {
+          axisBorder: {
+            show: false
+          },
+          labels: {
+            formatter: (value:any) => ( `$${value.toFixed(2)}` ),
+            style: {
+              color: '#8B8B8B',
+              fontSize: '14px',
+              fontFamily: 'Lato'
+            }
+          }
         },
         markers: {
           size: 5,
@@ -737,20 +750,17 @@ export default Vue.extend({
           onClick: undefined,
           onDblClick: undefined,
           hover: {
-            size: 6,
-            sizeOffset: 3,
-            strokeWidth: 3,
-            strokeColor: '#b1b1b1',
+            sizeOffset: 1
           }
         },
         stroke: {
           show: true,
-          curve: 'smooth',
+          curve: 'straight',
           lineCap: 'butt',
           width: 5
         },
         legend: {
-          show: true,
+          show: false,
           fontSize: '15px',
           fontFamily: 'Lato',
           formatter: undefined,
@@ -1056,11 +1066,11 @@ footer {
             cursor: pointer;
             outline: none;
             margin-right: 12px;
-            box-shadow: 0 4px 10px rgba(219, 166, 44, 0.3);
+            box-shadow: 0 4px 10px rgba(219, 166, 44, 0.2);
             transition: all 0.2s ease-out;
             &:hover {
               background: $accent-lighten-10;
-              box-shadow: 0 4px 15px rgba(219, 166, 44, 0.4);
+              box-shadow: 0 4px 15px rgba(219, 166, 44, 0.2);
             }
           }
         }
@@ -1216,11 +1226,11 @@ footer {
         cursor: pointer;
         outline: none;
         margin-right: 12px;
-        box-shadow: 0 4px 10px rgba(219, 166, 44, 0.3);
+        box-shadow: 0 4px 10px rgba(219, 166, 44, 0.2);
         transition: all 0.2s ease-out;
         &:hover {
           background: $accent-lighten-10;
-          box-shadow: 0 4px 15px rgba(219, 166, 44, 0.4);
+          box-shadow: 0 4px 15px rgba(219, 166, 44, 0.2);
         }
       }
       button.secondary {
