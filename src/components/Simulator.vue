@@ -637,31 +637,6 @@ export default Vue.extend({
       }
       return data;
     },
-
-    chartsDataset(): any {
-      const datasets = {
-        labels: this.historicalEvents,
-        datasets: [
-          {
-            label: "Buy Curve",
-            data: this.buyCurveData,
-            fill: false,
-            borderColor: "rgb(75, 192, 192)",
-            lineTension: 0.1
-          },
-          {
-            label: "Sell Curve",
-            data: this.sellCurveData,
-            fill: true,
-            borderColor: "#f87979",
-            backgroundColor: "rgba(248,121,121,0.05)",
-            lineTension: 0.1
-          }
-        ]
-      };
-      return datasets;
-    },
-
     historyChartDataset(): any {
       const datasets = [
         {
@@ -709,6 +684,7 @@ export default Vue.extend({
     },
     historyChartOptions(): any {
       return {
+        colors: ['#64B7F4','#71D69B'],
         theme: {
           mode: 'dark'
         },
@@ -851,7 +827,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: black;
+  background: #171716;
   margin-right: 20px;
 }
 
@@ -965,7 +941,7 @@ footer {
     max-width: 370px;
     height: 100%;
     padding: 20px;
-    background: #191818;
+    background: #171716;
     display: flex;
     overflow: auto;
     .actions-list {
