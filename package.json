@@ -29,6 +29,7 @@
     "numeral": "^2.0.6",
     "vue": "~2.6",
     "vue-apexcharts": "^1.5.1",
+    "vue-numeric": "^2.3.0",
     "vue-router": "~3.0"
   },
   "devDependencies": {

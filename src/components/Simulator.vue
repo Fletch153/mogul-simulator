@@ -38,14 +38,14 @@
               <div class="wrapper">
                   <div class="form-wrapper">
                     <ul class="segmented-control">
-                      <li v-for="option in investOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
+                      <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === investSelected ? activeStyle : ''" @click="selectInvest(option.value)">{{option.label}}</li>
                     </ul>
                     <button class="common" @click="invest">Invest</button>
                     <HelpIcon class="help-icon" />
                   </div>
                   <label>Millions</label>
-                  <div class="input-wrapper">
-                    <input class="usd-label" v-model="daiInvestment" />
+                  <div class="input-wrapper" v-if="this.investSelected === 'Custom'">
+                    <vue-numeric separator="," class="usd-label" v-model="daiInvestment"></vue-numeric>
                     <span>USD</span>
                   </div>
               </div>
@@ -55,14 +55,14 @@
               <div class="wrapper">
                 <div class="form-wrapper">
                   <ul class="segmented-control">
-                    <li v-for="option in sellOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
+                    <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === sellSelected ? activeStyle : ''" v-bind:class="{ active: option.selected }" @click="selectSell(option.value)">{{option.label}}</li>
                   </ul>
-                  <button class="common" @click="sell">Sell</button>
+                  <button class="common" @click="sell" v-if={}>Sell</button>
                   <HelpIcon class="help-icon" />
                 </div>
                   <label>Millions</label>
-                  <div class="input-wrapper">
-                    <input class="mgl-label" v-model="mglSold" />
+                  <div class="input-wrapper" v-if="this.sellSelected === 'Custom'">
+                    <vue-numeric separator="," class="mgl-label" v-model="mglSold"></vue-numeric>
                     <span>MGL</span>
                   </div>
               </div>
@@ -72,14 +72,14 @@
               <div class="wrapper">
                 <div class="form-wrapper">
                   <ul class="segmented-control">
-                    <li v-for="option in payOptions" v-bind:key="option.value" v-bind:class="{ active: option.selected }">{{option.label}}</li>
+                    <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === paySelected ? activeStyle : ''" @click="selectPay(option.value)">{{option.label}}</li>
                   </ul>
                   <button class="common" @click="payDividend">Pay</button>
                   <HelpIcon class="help-icon" />
                 </div>
                   <label>Millions</label>
-                  <div class="input-wrapper">
-                    <input class="usd-label" v-model="dividendPaid" />
+                  <div class="input-wrapper" v-if="this.paySelected === 'Custom'">
+                    <vue-numeric separator="," class="usd-label" v-model="dividendPaid"></vue-numeric>
                     <span>USD</span>
                   </div>
               </div>
@@ -93,11 +93,39 @@
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded }">
           <h2>Parameter settings</h2>
           <ul class="parameters-wrapper">
-            <li v-for="(param, index) in params" v-bind:key="index" class="level">
-              <label class="level-left" v-bind:for="param.id">{{param.label}}</label>
+            <li class="level">
+              <label class="level-left">MGL</label>
               <div class="level-right inputs">
-                <input size="9" v-bind:id="param.id" v-model="param.value" v-bind:class="param.id" />
-                <span v-bind:class="param.id">%</span>
+                <vue-numeric size="10" separator="," v-model="premintedMGL"></vue-numeric>
+                <span class="premintedMGL">%</span>
+              </div>
+            </li>
+            <li class="level">
+              <label class="level-left">Initial USD Investment</label>
+              <div class="level-right inputs">
+                <vue-numeric size="10" separator="," v-model="initialDAIInvestment"></vue-numeric>
+                <span class="initialDAIInvestment">%</span>
+              </div>
+            </li>
+            <li class="level">
+              <label class="level-left">Reserve ratio</label>
+              <div class="level-right inputs">
+                <vue-numeric size="10" separator="," v-model="reserveRatio"></vue-numeric>
+                <span class="reserveRatio">%</span>
+              </div>
+            </li>
+            <li class="level">
+              <label class="level-left">Buy slope multiplier</label>
+              <div class="level-right inputs">
+                <vue-numeric size="10" separator="," v-model="buySlopeMultiplier"></vue-numeric>
+                <span class="buySlopeMultiplier">%</span>
+              </div>
+            </li>
+            <li class="level">
+              <label class="level-left">Commission</label>
+              <div class="level-right inputs">
+                <vue-numeric size="10" separator="," v-model="commission"></vue-numeric>
+                <span class="commission">%</span>
               </div>
             </li>
           </ul>
@@ -144,7 +172,8 @@
 <script lang="ts">
 import Vue from "vue";
 import numeral from "numeral";
-import VueApexCharts from 'vue-apexcharts'
+import VueNumeric from 'vue-numeric';
+import VueApexCharts from 'vue-apexcharts';
 // svg graphics
 import MogulLogo from "../assets/mogul-logo.svg?inline";
 import HelpIcon from "../assets/question-mark.svg?inline";
@@ -224,7 +253,8 @@ export default Vue.extend({
     LineGraphic,
     LineWideGraphic,
     PlayIcon,
-    SettingsIcon
+    SettingsIcon,
+    VueNumeric
   },
   data() {
     return {
@@ -249,34 +279,15 @@ export default Vue.extend({
       commissionBalance: 0,
       commission: 2,
       isOrganisationClosed: false,
-      investOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'invest', selected: true }
-      ],
-      sellOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'sell', selected: true }
-      ],
-      payOptions: [
-        { label: 1, value: 1, selected: false },
-        { label: 5, value: 5, selected: false },
-        { label: 10, value: 10, selected: false },
-        { label: 'Custom', value: 'pay', selected: true }
-      ],
-      selectedCustomFields: [] as any,
-      investValue: 0,
-      sellValue: 0,
-      payValue: 0,
-      settingsExpanded: true
+      settingsExpanded: true,
+      investSelected: 1,
+      sellSelected: 1,
+      paySelected: 1
     };
   },
   methods: {
-      toggleSettings(): void {
-        this.settingsExpanded = !this.settingsExpanded;
+    toggleSettings(): void {
+      this.settingsExpanded = !this.settingsExpanded;
     },
     start(): void {
       this.totalMGL = this.premintedMGL * MGL;
@@ -442,10 +453,23 @@ export default Vue.extend({
       this.historicalSellPrices = new Array<string>();
       this.historicalBuyPrices = new Array<string>();
     },
-    onSelect(optionsSelected: any) {
-        if (optionsSelected.label === 'Custom' && this.selectedCustomFields.indexOf(optionsSelected.value) === -1) {
-          this.selectedCustomFields.push(optionsSelected.value)
-        }
+    selectInvest(value: any): void {
+      if (value !== 'Custom') {
+        this.daiInvestment = value*1000000;
+      }
+      this.investSelected = value;
+    },
+    selectSell(value: any): void {
+      if (value !== 'Custom') {
+        this.mglSold = value*1000000;
+      }
+      this.sellSelected = value;
+    },
+    selectPay(value: any): void {
+      if (value !== 'Custom') {
+        this.dividendPaid = value*1000000;
+      }
+      this.paySelected = value;
     }
   },
   computed: {
@@ -565,20 +589,6 @@ export default Vue.extend({
       }
       return data;
     },
-
-    chartLabels(): string[] {
-      const data = [];
-      data.push("0");
-      data.push(this.premintedMGL.toString());
-      for (let i = 0; i <= 10; i++) {
-        const investAmount = 1 + i * 10000000;
-        const mglReceived =
-          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI, this.buySlopeMultiplier) /
-          MGL;
-        data.push(Math.round(mglReceived + this.totalMGL / MGL).toString());
-      }
-      return data;
-    },
     historyChartDataset(): any {
       const datasets = [
         {
@@ -593,36 +603,6 @@ export default Vue.extend({
         }
       ];
       return datasets;
-    },
-    params(): any {
-      return [
-        {
-          label: 'MGL',
-          value: this.premintedMGL,
-          id: 'premintedMGL'
-        },
-        {
-          label: 'Initial USD Investment',
-          value: this.initialDAIInvestment,
-          id: 'initialDAIInvestment',
-
-        },
-        {
-          label: 'Reserve ratio',
-          value: this.reserveRatio,
-          id: 'reserveRatio'
-        },
-        {
-          label: 'Buy slope multiplier',
-          value: this.buySlopeMultiplier,
-          id: 'buySlopeMultiplier'
-        },
-        {
-          label: 'Commission',
-          value: this.commission,
-          id: 'commission'
-        },
-      ]
     },
     historyChartOptions(): any {
       return {
@@ -797,6 +777,17 @@ export default Vue.extend({
               highlightDataSeries: true
           }
         }
+      }
+    },
+    activeStyle() {
+      return 'background: #2b2b2b;font-weight: 700;';
+    },
+    segmentedControlOptions(): any {
+      return {
+        1: { label: 1, value: 1 },
+        5: { label: 5, value: 5 },
+        10: { label: 10, value: 10 },
+        'Custom': { label: 'Custom', value: 'Custom' }
       }
     }
   }
@@ -1003,7 +994,7 @@ footer {
     display: flex;
     flex-direction: column;
     .item {
-      margin-bottom: 45px;
+      margin-bottom: 35px;
       h3 {
         display: block;
         border-bottom: 1px solid #2D2D2D;
@@ -1042,14 +1033,9 @@ footer {
             margin-right: 12px;
             li {
               padding: 8px 16px;
-              cursor: not-allowed;
+              cursor: pointer;
               &:not(:last-of-type) {
                 border-right: 1px solid #2b2b2b;
-              }
-              &.active {
-                background: #2b2b2b;
-                font-weight: 700;
-                cursor: pointer;
               }
             }
           }
