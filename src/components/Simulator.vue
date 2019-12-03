@@ -269,9 +269,9 @@ export default Vue.extend({
       investmentFund: 0,
       premintedMGL: 36000000,
       initialDAIInvestment: 3000000,
-      daiInvestment: 0,
-      mglSold: 0,
-      dividendPaid: 0,
+      daiInvestment: 1000000,
+      mglSold: 1000000,
+      dividendPaid: 1000000,
       dividendRatio: 20,
       historicalEvents: new Array<string>(),
       historicalSellPrices: new Array<string>(),
@@ -442,9 +442,9 @@ export default Vue.extend({
       this.investmentFund = 0;
       this.premintedMGL = 60000000;
       this.initialDAIInvestment = 3000000;
-      this.daiInvestment = 0;
-      this.mglSold = 0;
-      this.dividendPaid = 0;
+      this.daiInvestment = 1000000;
+      this.mglSold = 1000000;
+      this.dividendPaid = 1000000;
       this.commissionBalance = 0;
       this.mglToBurn = 0;
       this.burntSupply = 0;
