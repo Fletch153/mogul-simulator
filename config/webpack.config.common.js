@@ -76,7 +76,7 @@ const webpackConfig = {
           {
             loader: "file-loader",
             query: {
-              name: "assets/[name].[ext]"
+              name: "assets/svg/[name].[ext]"
             }
           }
         ]

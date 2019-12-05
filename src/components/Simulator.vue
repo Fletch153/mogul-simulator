@@ -297,7 +297,7 @@ export default Vue.extend({
       return (
         `<div class='tooltip-wrapper'>
           <div class='tooltip-header'>
-            <img src="../../src/assets/svg/mogul-logo-small.svg" />
+            <img src="../assets/svg/mogul-logo-small.svg" />
             ${this.tooltipData[dataPointIndex]}
           </div>
           <ul class="tooltip-content">
