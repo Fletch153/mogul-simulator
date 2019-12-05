@@ -76,7 +76,7 @@ const webpackConfig = {
           {
             loader: "file-loader",
             query: {
-              name: "assets/[name].[hash:8].[ext]"
+              name: "assets/[name].[ext]"
             }
           }
         ]

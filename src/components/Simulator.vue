@@ -175,12 +175,13 @@ import numeral from "numeral";
 import VueNumeric from 'vue-numeric';
 import VueApexCharts from 'vue-apexcharts';
 // svg graphics
-import MogulLogo from "../assets/mogul-logo.svg?inline";
-import HelpIcon from "../assets/question-mark.svg?inline";
-import LineGraphic from "../assets/simulate/line.svg?inline";
-import LineWideGraphic from "../assets/simulate/line-wide.svg?inline";
-import PlayIcon from "../assets/simulate/play.svg?inline";
-import SettingsIcon from "../assets/settings.svg?inline";
+import MogulLogo from "../assets/svg/mogul-logo.svg?inline";
+import HelpIcon from "../assets/svg/question-mark.svg?inline";
+import LineGraphic from "../assets/svg/simulate/line.svg?inline";
+import LineWideGraphic from "../assets/svg/simulate/line-wide.svg?inline";
+import PlayIcon from "../assets/svg/simulate/play.svg?inline";
+import SettingsIcon from "../assets/svg/settings.svg?inline";
+import MogulLogoSmall from "../assets/svg/mogul-logo-small.svg?inline";
 
 const DAI = 1000000000000000000; // 1 DAI
 const MGL = 1000000000000000000; // 1 MGL
@@ -254,7 +255,8 @@ export default Vue.extend({
     LineWideGraphic,
     PlayIcon,
     SettingsIcon,
-    VueNumeric
+    VueNumeric,
+    MogulLogoSmall
   },
   data() {
     return {
@@ -274,6 +276,11 @@ export default Vue.extend({
       dividendPaid: 1000000,
       dividendRatio: 20,
       historicalEvents: new Array<string>(),
+      tooltipData: new Array<string>(),
+      investmentFundEvents: new Array<string>(),
+      totalDAIInvestedEvents: new Array<string>(),
+      totalMGLEvents: new Array<string>(),
+      reserveSupplyEvents: new Array<string>(),
       historicalSellPrices: new Array<string>(),
       historicalBuyPrices: new Array<string>(),
       commissionBalance: 0,
@@ -286,6 +293,30 @@ export default Vue.extend({
     };
   },
   methods: {
+    customTooltip({series, dataPointIndex, xaxis, w}): any {
+      return (
+        `<div class='tooltip-wrapper'>
+          <div class='tooltip-header'>
+            <img src="../../src/assets/svg/mogul-logo-small.svg" />
+            ${this.tooltipData[dataPointIndex]}
+          </div>
+          <ul class="tooltip-content">
+            <li>
+              <div>Buy: <strong class="buy">$${series[0][dataPointIndex]}</strong></div>
+              <div>Sell: <strong class="sell">$${series[1][dataPointIndex]}</strong></div>
+            </li>
+            <li>
+              <div>MOGL Outstanding: <strong>${this.InvestmentFundEvents[dataPointIndex]}</strong></div>
+              <div>Total Invested: <strong>${this.totalDAIInvestedEvents[dataPointIndex]}</strong></div>
+            </li>
+            <li>
+              <div>MGL in Circulation: <strong>${this.totalMGLEvents[dataPointIndex]}</strong></div>
+              <div>Liquidity Pool: <strong>${this.reserveSupplyEvents[dataPointIndex]}</strong></div>
+            </li>
+          </ul>
+        </div>`
+      )
+    },
     toggleSettings(): void {
       this.settingsExpanded = !this.settingsExpanded;
     },
@@ -299,14 +330,29 @@ export default Vue.extend({
       this.commissionBalance = 0;
 
       this.historicalEvents = new Array<string>();
+      this.tooltipData = new Array<string>();
+      this.InvestmentFundEvents = new Array<string>();
+      this.totalDAIInvestedEvents = new Array<string>();
+      this.totalMGLEvents = new Array<string>();
+      this.reserveSupplyEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
       this.historicalBuyPrices = new Array<string>();
       this.historicalSellPrices.push(`0`);
       this.historicalBuyPrices.push(`0`);
+      this.InvestmentFundEvents.push('$0');
+      this.totalDAIInvestedEvents.push('$0');
+      this.totalMGLEvents.push('0');
+      this.reserveSupplyEvents.push('$0');
       this.historicalEvents.push('Series A');
+      this.tooltipData.push('Series A');
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
       this.historicalEvents.push(`Invested $${(this.initialDAIInvestment / 1000000).toFixed(1)}M`);
+      this.tooltipData.push(`Invested <strong>$${(this.initialDAIInvestment / 1000000).toFixed(1)}M</strong>`);
+      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
       this.settingsExpanded = false;
     },
     close(): void {
@@ -356,8 +402,13 @@ export default Vue.extend({
 
       const investmentNumeral = numeral(this.daiInvestment).format("0.0A");
       this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+      this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
     },
 
     sell(): void {
@@ -397,10 +448,14 @@ export default Vue.extend({
       this.reserveSupply -= daiReturned;
       this.totalDAI -= daiReturned;
 
-      const sellNumeral = numeral(this.mglSold).format("0.0A");
-      this.historicalEvents.push(`Sold ${sellNumeral} MGL`);
+      this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+      this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
     },
 
     burn(): void {
@@ -428,10 +483,14 @@ export default Vue.extend({
       this.reserveSupply += dividend * this.dividendRatioDecimal;
       this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-      const dividendNumeral = numeral(this.dividendPaid).format("0.0A");
-      this.historicalEvents.push(`Sold $${this.dividendPaid}`);
+      this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+      this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
     },
 
     reset(): void {
@@ -449,7 +508,12 @@ export default Vue.extend({
       this.mglToBurn = 0;
       this.burntSupply = 0;
       this.dividendRatio = 20;
+      this.tooltipData = new Array<string>();
       this.historicalEvents = new Array<string>();
+      this.InvestmentFundEvents = new Array<string>();
+      this.totalDAIInvestedEvents = new Array<string>();
+      this.totalMGLEvents = new Array<string>();
+      this.reserveSupplyEvents = new Array<string>();
       this.historicalSellPrices = new Array<string>();
       this.historicalBuyPrices = new Array<string>();
     },
@@ -636,8 +700,13 @@ export default Vue.extend({
               shadeIntensity: 0,
               opacityFrom: 0.6,
               opacityTo: 0,
+              gradientToColors: ['#71D69B'],
               stops: [0, 90, 100]
             }
+        },
+        tooltip: {
+          followCursor: true,
+          custom: this.customTooltip
         },
         chart: {
           id: 'curve-chart',
@@ -718,7 +787,7 @@ export default Vue.extend({
           }
         },
         markers: {
-          size: 5,
+          size: 6,
           colors: undefined,
           fillOpacity: 1,
           strokeWidth: 0,
@@ -740,42 +809,7 @@ export default Vue.extend({
           width: 5
         },
         legend: {
-          show: false,
-          fontSize: '15px',
-          fontFamily: 'Lato',
-          formatter: undefined,
-          inverseOrder: false,
-          width: undefined,
-          height: undefined,
-          tooltipHoverFormatter: undefined,
-          offsetX: 0,
-          offsetY: 0,
-          labels: {
-              colors: undefined,
-              useSeriesColors: false
-          },
-          markers: {
-              width: 10,
-              height: 10,
-              strokeWidth: 0,
-              strokeColor: '#fff',
-              fillColors: undefined,
-              radius: 12,
-              customHTML: undefined,
-              onClick: undefined,
-              offsetX: 0,
-              offsetY: 0
-          },
-          itemMargin: {
-              horizontal: 20,
-              vertical: 5
-          },
-          onItemClick: {
-              toggleDataSeries: true
-          },
-          onItemHover: {
-              highlightDataSeries: true
-          }
+          show: false
         }
       }
     },
@@ -1245,4 +1279,69 @@ footer {
   }
 }
 
+.apexcharts-marker {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .33));
+}
+
+.apexcharts-series path {
+  filter: drop-shadow(0 0 21px rgba(40, 114, 219, .53));
+}
+
+.apexcharts-series path {
+  filter: drop-shadow(0 0 21px rgba(113, 214, 155, .53));
+}
+
+.apexcharts-tooltip.dark {
+  box-shadow: 0 2px 14px 0 rgba(0, 0, 0, .12);
+  background: none;
+  min-width: 260px;
+  .tooltip-wrapper {
+    border-radius: 7px;
+    overflow: hidden;
+    .tooltip-header {
+      background: rgba(0, 0, 0, .80);
+      padding: 15px 20px;
+      line-height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      img {
+        margin-right: 7px;
+      }
+      strong {
+        color: $accent;
+        margin-left: 4px;
+      }
+    }
+    .tooltip-content {
+      padding: 12px 20px;
+      background: rgba(20, 20, 20, .93);
+      color: #A6A6A6;
+      li:not(:last-of-type) {
+        padding-bottom: 9px;
+        position: relative;
+        margin-bottom: 9px;
+        &:after {
+          content: '';
+          height: 1px;
+          width: 12px;
+          background: #2F2F2F;
+          position: absolute;
+          left: 0;
+          bottom: 0;
+        }
+      }
+      strong {
+        color: white;
+        font-weight: 700;
+      }
+      .buy {
+        color: $primary;
+      }
+      .sell {
+        color: $secondary;
+      }
+    }
+  }
+}
 </style>
