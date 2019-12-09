@@ -25,11 +25,11 @@
           <div class="overall-wrapper">
             <div class="data-item">
               <h2 class="buy">${{HRBuyDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Buy</span> <HelpIcon class="help-icon" /></label>
+              <label><span>Buy</span> <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you need to send to receive 1 MGL'" /></label>
             </div>
             <div class="data-item">
               <h2 class="sell">${{HRSellDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Sell</span> <HelpIcon class="help-icon" /></label>
+              <label><span>Sell</span> <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you are going to receive for the next 1 MGL sold'" /></label>
             </div>
           </div>
           <div class="actions">
@@ -174,6 +174,7 @@ import Vue from "vue";
 import numeral from "numeral";
 import VueNumeric from 'vue-numeric';
 import VueApexCharts from 'vue-apexcharts';
+import { VTooltip, VPopover, VClosePopover } from 'v-tooltip'
 // svg graphics
 import MogulLogo from "../assets/svg/mogul-logo.svg?inline";
 import HelpIcon from "../assets/svg/question-mark.svg?inline";
@@ -244,6 +245,9 @@ const sellCalc = (
 };
 
 Vue.component('apexchart', VueApexCharts)
+Vue.directive('tooltip', VTooltip)
+Vue.directive('close-popover', VClosePopover)
+Vue.component('v-popover', VPopover)
 
 export default Vue.extend({
   name: "Simulator",
@@ -297,6 +301,7 @@ export default Vue.extend({
       return (
         `<div class='tooltip-wrapper'>
           <div class='tooltip-header'>
+            <!-- todo: find a way to manage proper way of inserting the logo here -->
             <img src="../assets/svg/mogul-logo-small.svg" />
             ${this.tooltipData[dataPointIndex]}
           </div>
@@ -306,7 +311,7 @@ export default Vue.extend({
               <div>Sell: <strong class="sell">$${series[1][dataPointIndex]}</strong></div>
             </li>
             <li>
-              <div>MOGL Outstanding: <strong>${this.InvestmentFundEvents[dataPointIndex]}</strong></div>
+              <div>MGL Outstanding: <strong>${this.InvestmentFundEvents[dataPointIndex]}</strong></div>
               <div>Total Invested: <strong>${this.totalDAIInvestedEvents[dataPointIndex]}</strong></div>
             </li>
             <li>
@@ -499,7 +504,7 @@ export default Vue.extend({
       this.totalDaiInvested = 0;
       this.reserveSupply = 0;
       this.investmentFund = 0;
-      this.premintedMGL = 60000000;
+      this.premintedMGL = 36000000;
       this.initialDAIInvestment = 3000000;
       this.daiInvestment = 1000000;
       this.mglSold = 1000000;
@@ -1341,6 +1346,115 @@ footer {
       .sell {
         color: $secondary;
       }
+    }
+  }
+}
+
+.tooltip {
+  display: block !important;
+  z-index: 10000;
+  .tooltip-inner {
+    background: #141414;
+    color: #E1E1E1;
+    font-size: 12px;
+    border-radius: 16px;
+    padding: 5px 10px 4px;
+  }
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-style: solid;
+    position: absolute;
+    margin: 5px;
+    border-color: black;
+    z-index: 1;
+  }
+  &[x-placement^="top"] {
+    margin-bottom: 5px;
+    .tooltip-arrow {
+      border-width: 5px 5px 0 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      bottom: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+  &[x-placement^="bottom"] {
+    margin-top: 5px;
+    .tooltip-arrow {
+      border-width: 0 5px 5px 5px;
+      border-left-color: transparent !important;
+      border-right-color: transparent !important;
+      border-top-color: transparent !important;
+      top: -5px;
+      left: calc(50% - 5px);
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+  }
+  &[x-placement^="right"] {
+    margin-left: 5px;
+    .tooltip-arrow {
+      border-width: 5px 5px 5px 0;
+      border-left-color: transparent !important;
+      border-top-color: transparent !important;
+      border-bottom-color: transparent !important;
+      left: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  &[x-placement^="left"] {
+    margin-right: 5px;
+    .tooltip-arrow {
+      border-width: 5px 0 5px 5px;
+      border-top-color: transparent !important;
+      border-right-color: transparent !important;
+      border-bottom-color: transparent !important;
+      right: -5px;
+      top: calc(50% - 5px);
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+  &[aria-hidden='true'] {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .15s, visibility .15s;
+  }
+  &[aria-hidden='false'] {
+    visibility: visible;
+    opacity: 1;
+    transition: opacity .15s;
+  }
+  &.info {
+    $color: rgba(#004499, .9);
+    .tooltip-inner {
+      background: $color;
+      color: white;
+      padding: 24px;
+      border-radius: 5px;
+      box-shadow: 0 5px 30px rgba(black, .1);
+    }
+    .tooltip-arrow {
+      border-color: $color;
+    }
+  }
+  &.popover {
+    $color: #f9f9f9;
+    .popover-inner {
+      background: $color;
+      color: black;
+      padding: 24px;
+      border-radius: 5px;
+      box-shadow: 0 5px 30px rgba(black, .1);
+    }
+    .popover-arrow {
+      border-color: $color;
     }
   }
 }

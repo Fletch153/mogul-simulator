@@ -27,6 +27,7 @@
     "apexcharts": "^3.10.1",
     "buefy": "^0.8.8",
     "numeral": "^2.0.6",
+    "v-tooltip": "^2.0.2",
     "vue": "~2.6",
     "vue-apexcharts": "^1.5.1",
     "vue-numeric": "^2.3.0",
