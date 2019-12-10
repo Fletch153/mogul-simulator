@@ -90,9 +90,9 @@
       <section class="chart-wrapper">
         <apexchart width=100% height=100% type="area" :series="historyChartDataset" :options="historyChartOptions" />
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
-        <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded }">
+        <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
           <h2>Parameter settings</h2>
-          <ul class="parameters-wrapper">
+          <ul class="parameters-wrapper" >
             <li class="level">
               <label class="level-left">MGL</label>
               <div class="level-right inputs">
@@ -135,7 +135,7 @@
             <button class="secondary" @click="reset">Reset</button>
           </div>
         </section>
-        <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded }" @click="toggleSettings" />
+        <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded, hidden: !showSettings }" @click="toggleSettings" />
       </section>
     </main>
 
@@ -294,12 +294,23 @@ export default Vue.extend({
       commission: 2,
       isOrganisationClosed: false,
       settingsExpanded: true,
+      showSettings: true,
       investSelected: 1,
       sellSelected: 1,
       paySelected: 1
     };
   },
+  mounted () {
+    let currentPath = this.$route.path
+    if (currentPath == '/public') this.initStart()
+  },
   methods: {
+    initStart() {
+      console.log('wat')
+      this.start();
+      this.settingsExpanded = false;
+      this.showSettings = false;
+    },
     customTooltip({series, dataPointIndex, xaxis, w}): any {
       return (
         `<div class='tooltip-wrapper'>
@@ -329,6 +340,7 @@ export default Vue.extend({
       this.settingsExpanded = !this.settingsExpanded;
     },
     start(): void {
+      console.log(this.$route.path);
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
       this.totalDaiInvested = this.totalDAI;
@@ -1164,6 +1176,7 @@ footer {
     }
   }
   .administration-wrapper {
+    display: block;
     position: absolute;
     right: -300px;
     top: 0;
@@ -1175,6 +1188,9 @@ footer {
     z-index: 20;
     &.visible {
       right: 0;
+    }
+    &.hidden {
+      display: none;
     }
     h2 {
       font-size: 16px;
@@ -1271,6 +1287,7 @@ footer {
     }
   }
   .settings {
+    display: block;
     position: absolute;
     right: 20px;
     top: 20px;
@@ -1278,6 +1295,9 @@ footer {
     cursor: pointer;
     &.active path, &:hover path {
       fill: white;
+    }
+    &.hidden {
+      display: none;
     }
   }
 }
