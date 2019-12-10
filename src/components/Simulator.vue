@@ -88,11 +88,12 @@
         </div>
       </section>
       <section class="chart-wrapper">
+        <div class="centered-box" v-tooltip="'Secondary market is the place you can always buy and sell tokens, having in mind that there’s always the option to buy and sell at the price proposed by the DAT.'"></div>
         <apexchart width=100% height=100% type="area" :series="historyChartDataset" :options="historyChartOptions" />
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
           <h2>Parameter settings</h2>
-          <ul class="parameters-wrapper" >
+          <ul class="parameters-wrapper">
             <li class="level">
               <label class="level-left">MGL</label>
               <div class="level-right inputs">
@@ -134,6 +135,10 @@
             <button class="secondary" @click="close">Close</button>
             <button class="secondary" @click="reset">Reset</button>
           </div>
+          <div class="preset-wrapper">
+            <select-box :options="['Custom preset 1', 'Custom preset 2']"></select-box>
+            <div class="play"></div>
+          </div>
         </section>
         <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded, hidden: !showSettings }" @click="toggleSettings" />
       </section>
@@ -172,10 +177,11 @@
 <script lang="ts">
 import Vue from "vue";
 import numeral from "numeral";
-import VueNumeric from 'vue-numeric';
-import VueApexCharts from 'vue-apexcharts';
-import { VTooltip, VPopover, VClosePopover } from 'v-tooltip'
+import VueNumeric from "vue-numeric";
+import VueApexCharts from "vue-apexcharts";
+import { VTooltip, VPopover, VClosePopover } from "v-tooltip";
 import VueSimpleAlert from "vue-simple-alert";
+import SelectBox from "./common/SelectBox.vue";
 
 // svg graphics
 import MogulLogo from "../assets/svg/mogul-logo.svg?inline";
@@ -263,7 +269,8 @@ export default Vue.extend({
     PlayIcon,
     SettingsIcon,
     VueNumeric,
-    MogulLogoSmall
+    MogulLogoSmall,
+    SelectBox
   },
   data() {
     return {
@@ -719,6 +726,8 @@ export default Vue.extend({
         },
         tooltip: {
           followCursor: true,
+          intersect: true,
+          shared: false,
           custom: this.customTooltip
         },
         chart: {
@@ -1205,7 +1214,7 @@ footer {
         flex-direction: row;
         flex-wrap: nowrap;
         align-items: flex-end;
-        margin-bottom: 50px;
+        margin-bottom: 35px;
         label {
           font-size: 16px;
         }
@@ -1382,7 +1391,7 @@ footer {
     border-style: solid;
     position: absolute;
     margin: 5px;
-    border-color: black;
+    border-color: #141414;
     z-index: 1;
   }
   &[x-placement^="top"] {
@@ -1508,5 +1517,33 @@ footer {
   background: #333;
   font-weight: 700;
   color: #cdcdcd;
+}
+
+.centered-box {
+  position: absolute;
+  z-index: 3;
+  left: calc(50% - 50px);
+  top: calc(50%);
+  width: 100px;
+  height: 100px;
+}
+
+.preset-wrapper {
+  display: flex;
+  flex-direction: row;
+  margin-top: 35px;
+  .play {
+    width: 0;
+    height: 0;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 10px solid #DBA628;
+    margin: 14px 20px;
+    transition: all 0.2s ease-out;
+    cursor: pointer;
+    &:hover {
+      border-left: 10px solid #F5C75A;
+    }
+  }
 }
 </style>
