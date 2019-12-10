@@ -306,7 +306,6 @@ export default Vue.extend({
   },
   methods: {
     initStart() {
-      console.log('wat')
       this.start();
       this.settingsExpanded = false;
       this.showSettings = false;
@@ -340,7 +339,6 @@ export default Vue.extend({
       this.settingsExpanded = !this.settingsExpanded;
     },
     start(): void {
-      console.log(this.$route.path);
       this.totalMGL = this.premintedMGL * MGL;
       this.totalDAI = this.initialDAIInvestment * DAI; // TODO Fixme
       this.totalDaiInvested = this.totalDAI;
