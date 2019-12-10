@@ -41,7 +41,7 @@
                       <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === investSelected ? activeStyle : ''" @click="selectInvest(option.value)">{{option.label}}</li>
                     </ul>
                     <button class="common" @click="invest">Invest</button>
-                    <HelpIcon class="help-icon" />
+                    <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you want to invest'" />
                   </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.investSelected === 'Custom'">
@@ -58,7 +58,7 @@
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === sellSelected ? activeStyle : ''" v-bind:class="{ active: option.selected }" @click="selectSell(option.value)">{{option.label}}</li>
                   </ul>
                   <button class="common" @click="sell" v-if={}>Sell</button>
-                  <HelpIcon class="help-icon" />
+                  <HelpIcon class="help-icon" v-tooltip.bottom="'How much MGL you want to sell'"/>
                 </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.sellSelected === 'Custom'">
@@ -75,7 +75,7 @@
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === paySelected ? activeStyle : ''" @click="selectPay(option.value)">{{option.label}}</li>
                   </ul>
                   <button class="common" @click="payDividend">Pay</button>
-                  <HelpIcon class="help-icon" />
+                  <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you want to pay as dividend'" />
                 </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.paySelected === 'Custom'">
