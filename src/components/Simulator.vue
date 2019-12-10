@@ -175,6 +175,8 @@ import numeral from "numeral";
 import VueNumeric from 'vue-numeric';
 import VueApexCharts from 'vue-apexcharts';
 import { VTooltip, VPopover, VClosePopover } from 'v-tooltip'
+import VueSimpleAlert from "vue-simple-alert";
+
 // svg graphics
 import MogulLogo from "../assets/svg/mogul-logo.svg?inline";
 import HelpIcon from "../assets/svg/question-mark.svg?inline";
@@ -248,6 +250,7 @@ Vue.component('apexchart', VueApexCharts)
 Vue.directive('tooltip', VTooltip)
 Vue.directive('close-popover', VClosePopover)
 Vue.component('v-popover', VPopover)
+Vue.use(VueSimpleAlert);
 
 export default Vue.extend({
   name: "Simulator",
@@ -362,21 +365,19 @@ export default Vue.extend({
     },
     close(): void {
       const tax = this.totalDaiInvested;
-      const r = confirm(
-        `You have to pay  ${(tax / MGL).toFixed(
+      this.$confirm(
+        `You have to pay ${(tax / MGL).toFixed(
           2
         )} USD to close the Organisation. Shall we proceed?`
-      );
-      if (!r) {
-        return;
-      }
-      this.isOrganisationClosed = true;
-      this.reserveSupply += tax;
-      this.totalDAI += tax;
+      ).then(() => {
+        this.isOrganisationClosed = true;
+        this.reserveSupply += tax;
+        this.totalDAI += tax;
+      })
     },
     invest(): void {
       if (this.isOrganisationClosed) {
-          alert("The organisation is closed");
+          this.$alert("The organisation is closed");
           return;
       }
       const investment = this.daiInvestment * DAI;
@@ -386,34 +387,32 @@ export default Vue.extend({
         investment,
         this.buySlopeMultiplier
       );
-      const r = confirm(
+      this.$confirm(
         `You are about to buy ${(mglMinted / MGL).toFixed(
           2
         )} MGL at the price of ${(investment / mglMinted).toFixed(
           5
         )}. Shall we proceed?`
-      );
-      if (!r) {
-        return;
-      }
-      this.totalDAI += investment;
-      this.totalDaiInvested += investment;
-      this.reserveSupply += investment * this.reserveRatioDecimal;
-      this.investmentFund += investment * (1 - this.reserveRatioDecimal);
-      this.totalMGL += mglMinted;
-      const commissionMgl = mglMinted * this.commission / 100;
-      this.totalMGL += commissionMgl;
-      this.commissionBalance += commissionMgl;
-
-      const investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-      this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-      this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
-      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
-      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
-      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+      ).then(() => {
+        this.totalDAI += investment;
+        this.totalDaiInvested += investment;
+        this.reserveSupply += investment * this.reserveRatioDecimal;
+        this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+        this.totalMGL += mglMinted;
+        const commissionMgl = mglMinted * this.commission / 100;
+        this.totalMGL += commissionMgl;
+        this.commissionBalance += commissionMgl;
+  
+        const investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+        this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+        this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+        this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+        this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+        this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+        this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+      })
     },
 
     sell(): void {
@@ -435,48 +434,46 @@ export default Vue.extend({
           );
       }
       if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
-        alert("can't sell more than the tokens in circulation");
+        this.$alert("Can't sell more than the tokens in circulation");
         return;
       }
 
-      const r = confirm(
+      this.$confirm(
         `You are about to sell ${this.mglSold} MGL at price ${(
           daiReturned / sellAmount
         ).toFixed(5)} and receive back $${(daiReturned / DAI).toFixed(
           2
         )}. Shall we proceed?`
-      );
-      if (!r) {
-        return;
-      }
-      this.totalMGL -= sellAmount;
-      this.reserveSupply -= daiReturned;
-      this.totalDAI -= daiReturned;
-
-      this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-      this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
-      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
-      this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
-      this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+      ).then(() => {
+        this.totalMGL -= sellAmount;
+        this.reserveSupply -= daiReturned;
+        this.totalDAI -= daiReturned;
+  
+        this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+        this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+        this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+        this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+        this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+        this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+      })
     },
 
     burn(): void {
       if (this.isOrganisationClosed) {
-        alert("The organisation is closed");
+        this.$alert("The organisation is closed");
         return;
       }
       const tokensToBurn = this.mglToBurn * MGL;
       if (this.totalMGL - tokensToBurn < 0) {
-          alert("Can't burn more tokens than you have");
+          this.$alert("Can't burn more tokens than you have");
           return;
       }
       this.burntSupply += tokensToBurn;
       this.totalMGL -= tokensToBurn;
 
-      const burnNumeral = numeral(this.mglToBurn).format("0.0a");
+      const burnNumeral = numeral(this.mglToBurn).format("0.0A");
       this.historicalEvents.push(`Burned ${burnNumeral} MGL`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
@@ -499,6 +496,7 @@ export default Vue.extend({
     },
 
     reset(): void {
+      this.isOrganisationClosed = false;
       this.totalMGL = 0;
       this.totalDAI = 0;
       this.totalDaiInvested = 0;
@@ -1457,5 +1455,40 @@ footer {
       border-color: $color;
     }
   }
+}
+.swal2-popup {
+  background: #1c1c1b;
+  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2);
+  color: white;
+  font-family: 'Lato';
+  font-size: 14px;
+}
+
+.swal2-content {
+  color: #cdcdcd;
+  strong {
+    color: $primary;
+    font-weight: 700;
+  }
+}
+
+.swal2-styled {
+  padding: 10px 24px;
+}
+
+.swal2-styled.swal2-confirm {
+  background: $accent;
+  font-size: 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  color: black;
+}
+
+.swal2-styled.swal2-cancel {
+  border-radius: 8px;
+  font-size: 14px;
+  background: #333;
+  font-weight: 700;
+  color: #cdcdcd;
 }
 </style>

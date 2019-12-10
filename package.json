@@ -31,7 +31,8 @@
     "vue": "~2.6",
     "vue-apexcharts": "^1.5.1",
     "vue-numeric": "^2.3.0",
-    "vue-router": "~3.0"
+    "vue-router": "~3.0",
+    "vue-simple-alert": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "~7.2",
