@@ -302,7 +302,7 @@ export default Vue.extend({
         `<div class='tooltip-wrapper'>
           <div class='tooltip-header'>
             <!-- todo: find a way to manage proper way of inserting the logo here -->
-            <img src="../assets/svg/mogul-logo-small.svg" />
+            <img src="http://simulator-v2.s3-website.us-east-2.amazonaws.com/assets/svg/mogul-logo-small.svg" />
             ${this.tooltipData[dataPointIndex]}
           </div>
           <ul class="tooltip-content">
