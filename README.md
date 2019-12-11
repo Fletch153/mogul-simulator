@@ -1,29 +1,43 @@
-# curve-simulator
+# Continuous organisation simulation
 
-## Project setup
-```
-yarn install
-```
+## About The Project
 
-### Compiles and hot-reloads for development
-```
-yarn run serve
-```
+A continuous organisation simulation app for showcasing large set of possible cases of a continuous organisation. Made for [Mogul Productions](http://mogulproductions.com/).
 
-### Compiles and minifies for production
-```
-yarn run build
-```
+### Built With
+* [Vue](https://vuejs.org)
+* [Typescript](https://www.typescriptlang.org/)
+* [Apexcharts](https://apexcharts.com/)
 
-### Run your tests
+## Getting started
+
+The project itself is easy to setup and build. Follow the steps below:
+
+### Install dependencies
 ```
-yarn run test
+npm i
 ```
 
-### Lints and fixes files
+### Run the project
 ```
-yarn run lint
+npm run dev
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+### Build
+```
+npm run build
+```
+
+## Usage
+
+Use the *parameter settings* panel on the right to start the simulation. You can hide the parameters with the gear icon on the top right. Next, use the invest, sell and pay dividend action buttons on the left or the preset cases in the parameter settings. You can reset and close the simulation from there too.
+
+For further instructions, check the help icons next to any action item.
+
+## Roadmap
+
+See the [open issues](https://github.com/mogulproductions/mogul-simulator/issues) for a list of proposed features (and known issues).
+
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
