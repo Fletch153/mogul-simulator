@@ -1,6 +1,5 @@
 <template>
   <div class="mogul-corg">
-
     <!-- HEADER -->
     <header class="level">
       <div class="level-left logo">
@@ -1898,6 +1897,7 @@ footer {
     background: #191818;
     transition: all 0.7s cubic-bezier(.85,.01,.38,1);
     z-index: 20;
+    overflow-y: auto;
     &.visible {
       right: 0;
     }
