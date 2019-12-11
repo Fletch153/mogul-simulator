@@ -2189,39 +2189,35 @@ footer {
   }
 }
 .swal2-popup {
-  background: #1c1c1b;
-  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2);
-  color: white;
-  font-family: 'Lato';
-  font-size: 14px;
+  background: #1c1c1b !important;
+  box-shadow: 0 2px 15px 0 rgba(0, 0, 0, 0.2) !important;
+  color: white !important;
+  font-family: 'Lato' !important;
+  font-size: 14px !important;
 }
 
 .swal2-content {
-  color: #cdcdcd;
-  strong {
-    color: $primary;
-    font-weight: 700;
-  }
+  color: #cdcdcd !important;
 }
 
 .swal2-styled {
-  padding: 10px 24px;
+  padding: 10px 24px !important;
 }
 
 .swal2-styled.swal2-confirm {
-  background: $accent;
-  font-size: 14px;
-  border-radius: 8px;
-  font-weight: 700;
-  color: black;
+  background: $accent !important;
+  font-size: 14px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  color: black !important;
 }
 
 .swal2-styled.swal2-cancel {
-  border-radius: 8px;
-  font-size: 14px;
-  background: #333;
-  font-weight: 700;
-  color: #cdcdcd;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  background: #333 !important;
+  font-weight: 700 !important;
+  color: #cdcdcd !important;
 }
 
 .centered-box {
