@@ -1,0 +1,12 @@
+<svg width="9px" height="6px" viewBox="0 0 9 6" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="[public]-Block-explorer-/-dashboard" transform="translate(-782.000000, -225.000000)">
+            <g id="Monthly-consumption" transform="translate(484.000000, 198.000000)">
+                <rect id="Rectangle-Copy" fill="#1D1E1E" x="0" y="0" width="398" height="305" rx="8"></rect>
+                <g id="Icon-/-Chevron-/-Down" transform="translate(298.000000, 27.000000)" fill="#DBA628" fill-rule="nonzero">
+                    <polygon id="" points="7.9453125 0 9 1.0546875 4.5 5.5546875 0 1.0546875 1.0546875 0 4.5 3.4453125"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

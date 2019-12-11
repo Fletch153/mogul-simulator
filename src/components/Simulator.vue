@@ -115,17 +115,22 @@
               </div>
             </li>
             <li class="level">
-              <label class="level-left">Buy slope multiplier</label>
-              <div class="level-right inputs">
-                <vue-numeric size="10" separator="," v-model="buySlopeMultiplier"></vue-numeric>
-                <span class="buySlopeMultiplier">%</span>
-              </div>
-            </li>
-            <li class="level">
               <label class="level-left">Commission</label>
               <div class="level-right inputs">
                 <vue-numeric size="10" separator="," v-model="commission"></vue-numeric>
                 <span class="commission">%</span>
+              </div>
+            </li>
+            <li>
+              <div class="toggle-pane">
+                <div class="toggle-header level" @click="togglePane"><label class="level-left">Other</label><ArrowToggle class="level-right arrow-toggle" /></div>
+                <div class="toggle-content level" v-bind:class="{ hidden: !showBuySlope }">
+                  <label class="level-left">Buy slope multiplier</label>
+                  <div class="level-right inputs">
+                    <vue-numeric size="10" separator="," v-model="buySlopeMultiplier"></vue-numeric>
+                    <span class="buySlopeMultiplier">%</span>
+                  </div>
+                </div>
               </div>
             </li>
           </ul>
@@ -190,6 +195,7 @@ import LineWideGraphic from "../assets/svg/simulate/line-wide.svg?inline";
 import PlayIcon from "../assets/svg/simulate/play.svg?inline";
 import SettingsIcon from "../assets/svg/settings.svg?inline";
 import MogulLogoSmall from "../assets/svg/mogul-logo-small.svg?inline";
+import ArrowToggle from "../assets/svg/arrow-toggle.svg?inline";
 
 const DAI = 1000000000000000000; // 1 DAI
 const MGL = 1000000000000000000; // 1 MGL
@@ -269,7 +275,8 @@ export default Vue.extend({
     SettingsIcon,
     VueNumeric,
     MogulLogoSmall,
-    SelectBox
+    SelectBox,
+    ArrowToggle
   },
   data() {
     return {
@@ -304,7 +311,8 @@ export default Vue.extend({
       investSelected: 1,
       sellSelected: 1,
       paySelected: 1,
-      selected: 'Base case'
+      selected: 'Base case',
+      showBuySlope: false
     };
   },
   mounted () {
@@ -785,6 +793,9 @@ export default Vue.extend({
           this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
           this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          this.selectInvest(1);
+          this.selectSell(1);
+          this.selectPay(1);
           return
 
         case 'Medium case':
@@ -1021,7 +1032,11 @@ export default Vue.extend({
           this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
           this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          this.selectInvest(1);
+          this.selectSell(1);
+          this.selectPay(1);
           return
+
         case 'Bull case':
           // invest 100M
           investment = 100000000 * DAI;
@@ -1256,8 +1271,14 @@ export default Vue.extend({
           this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
           this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          this.selectInvest(1);
+          this.selectSell(1);
+          this.selectPay(1);
           return
       }
+    },
+    togglePane() {
+      this.showBuySlope = !this.showBuySlope
     }
   },
   computed: {
@@ -2244,6 +2265,28 @@ footer {
     cursor: pointer;
     &:hover {
       border-left: 10px solid #F5C75A;
+    }
+  }
+}
+
+.toggle-pane {
+  width: 100%;
+  .toggle-header {
+    cursor: pointer;
+    > label {
+      cursor: pointer;
+      color: $accent;
+    }
+    &:hover {
+      label {
+        color: $accent-lighten-10;
+      }
+    }
+  }
+  .toggle-content {
+    display: flex;
+    &.hidden {
+      display: none;
     }
   }
 }
