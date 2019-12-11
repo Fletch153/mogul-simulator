@@ -6,7 +6,7 @@
         class="item"
         v-for="(option, i) of options"
         :key="i"
-        @click="selected=option; open=false; $emit('input', option)"
+        @click="selected=option; open=false; $emit('onSelect', option)"
       >{{ option }}</div>
     </div>
   </div>
@@ -32,7 +32,8 @@ export default {
     };
   },
   mounted() {
-    this.$emit("input", this.selected);
+    let selected = this.selected;
+    this.$emit('onSelect', selected);
   }
 };
 </script>

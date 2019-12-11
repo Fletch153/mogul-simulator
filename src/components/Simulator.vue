@@ -6,11 +6,11 @@
       <div class="level-left logo">
         <div class="logo-box"><MogulLogo /></div>
         <div class="heading">
-          <h1>Continuous organisation <HelpIcon class="help-header help-icon" /></h1>
+          <h1>Continuous organisation <HelpIcon class="help-header help-icon" v-tooltip.bottom="'Mogul raises capital for its film fund using a Continuous Organization model. This gives investors better liquidity options and sustainable prices the assets based on investor risk and confidence. MGL is backed by future cash flows from Mogul movies.'" /></h1>
           <p>Simulation</p>
         </div>
       </div>
-      <div class="level-right simulate-wrapper">
+      <div class="level-right simulate-wrapper" v-tooltip.bottom="'Walk through a sequence of events to learn how a Continuous Organization works'">
         <LineWideGraphic class="line-graphic line-02" />
         <LineGraphic class="line-graphic line-01" />
         <span>Simulate</span>
@@ -25,11 +25,11 @@
           <div class="overall-wrapper">
             <div class="data-item">
               <h2 class="buy">${{HRBuyDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Buy</span> <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you need to send to receive 1 MGL'" /></label>
+              <label><span>Buy</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Cost to buy 1 MGL'" /></label>
             </div>
             <div class="data-item">
               <h2 class="sell">${{HRSellDAIPerMGL.toFixed(3)}}</h2>
-              <label><span>Sell</span> <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you are going to receive for the next 1 MGL sold'" /></label>
+              <label><span>Sell</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Price to sell 1 MGL'" /></label>
             </div>
           </div>
           <div class="actions">
@@ -41,7 +41,7 @@
                       <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === investSelected ? activeStyle : ''" @click="selectInvest(option.value)">{{option.label}}</li>
                     </ul>
                     <button class="common" @click="invest">Invest</button>
-                    <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you want to invest'" />
+                    <HelpIcon class="help-icon" v-tooltip.bottom="'Dollars you want to invest'" />
                   </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.investSelected === 'Custom'">
@@ -58,7 +58,7 @@
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === sellSelected ? activeStyle : ''" v-bind:class="{ active: option.selected }" @click="selectSell(option.value)">{{option.label}}</li>
                   </ul>
                   <button class="common" @click="sell" v-if={}>Sell</button>
-                  <HelpIcon class="help-icon" v-tooltip.bottom="'How much MGL you want to sell'"/>
+                  <HelpIcon class="help-icon" v-tooltip.bottom="'How many MGL you want to sell'"/>
                 </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.sellSelected === 'Custom'">
@@ -75,7 +75,7 @@
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === paySelected ? activeStyle : ''" @click="selectPay(option.value)">{{option.label}}</li>
                   </ul>
                   <button class="common" @click="payDividend">Pay</button>
-                  <HelpIcon class="help-icon" v-tooltip.bottom="'How much USD you want to pay as dividend'" />
+                  <HelpIcon class="help-icon" v-tooltip.bottom="'Dollar value of the dividend Mogul pays to investors'" />
                 </div>
                   <label>Millions</label>
                   <div class="input-wrapper" v-if="this.paySelected === 'Custom'">
@@ -136,22 +136,22 @@
             <button class="secondary" @click="reset">Reset</button>
           </div>
           <div class="preset-wrapper">
-            <select-box :options="['Custom preset 1', 'Custom preset 2']"></select-box>
-            <div class="play"></div>
+            <select-box :options="['Base case', 'Medium case', 'Bull case']" v-on:onSelect="onSelection" :selected="selected"></select-box>
+            <div class="play" @click="startPreset(selected)"></div>
           </div>
         </section>
         <SettingsIcon class="settings" v-bind:class="{ active: settingsExpanded, hidden: !showSettings }" @click="toggleSettings" />
       </section>
     </main>
-
-    <!-- FOOTER -->
+  
+  <!-- FOOTER -->
   <footer>
     <div class="asterisk">*All prices are in USD/MGL</div>
     <section class="general-details">
       <div class="column-wrapper">
         <div class="labels">
-          <label>MGL in Circulation: </label>
-          <label>Liquidity pool: </label>
+          <label v-tooltip.top="'Number of tokens that exist'">MGL in Circulation: </label>
+          <label v-tooltip.top="'Dollars in escrow for investors to sell into'">Liquidity Pool: </label>
         </div>
         <div class="data-fields">
           <p>{{HRTotalMGL.toLocaleString()}}</p>
@@ -161,8 +161,8 @@
 
       <div class="column-wrapper">
         <div class="labels">
-          <label>Total invested: </label>
-          <label>Investment fund: </label>
+          <label v-tooltip.top="'Total dollars invested in Mogul'">Total Invested: </label>
+          <label v-tooltip.top="'Dollars being invested in movies'">Investment Fund: </label>
         </div>
         <div class="data-fields">
           <p>${{HRTotalDAIInvested.toFixed(0).toLocaleString()}}M</p>
@@ -256,7 +256,7 @@ Vue.component('apexchart', VueApexCharts)
 Vue.directive('tooltip', VTooltip)
 Vue.directive('close-popover', VClosePopover)
 Vue.component('v-popover', VPopover)
-Vue.use(VueSimpleAlert);
+Vue.use(VueSimpleAlert, { confirmButtonText: 'Yes' });
 
 export default Vue.extend({
   name: "Simulator",
@@ -304,7 +304,8 @@ export default Vue.extend({
       showSettings: true,
       investSelected: 1,
       sellSelected: 1,
-      paySelected: 1
+      paySelected: 1,
+      selected: 'Base case'
     };
   },
   mounted () {
@@ -378,14 +379,12 @@ export default Vue.extend({
       this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
       this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
       this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
-      this.settingsExpanded = false;
+      // this.settingsExpanded = false;
     },
     close(): void {
       const tax = this.totalDaiInvested;
       this.$confirm(
-        `You have to pay ${(tax / MGL).toFixed(
-          2
-        )} USD to close the Organisation. Shall we proceed?`
+        `You are paying ${(tax / MGL).toFixed(2)} USD to close the Organisation. Continue?`
       ).then(() => {
         this.isOrganisationClosed = true;
         this.reserveSupply += tax;
@@ -405,11 +404,7 @@ export default Vue.extend({
         this.buySlopeMultiplier
       );
       this.$confirm(
-        `You are about to buy ${(mglMinted / MGL).toFixed(
-          2
-        )} MGL at the price of ${(investment / mglMinted).toFixed(
-          5
-        )}. Shall we proceed?`
+        `You are buying ${(mglMinted / MGL).toFixed(2)} MGL at an average price of $${(investment / mglMinted).toFixed(2)}. Continue?`
       ).then(() => {
         this.totalDAI += investment;
         this.totalDaiInvested += investment;
@@ -456,11 +451,7 @@ export default Vue.extend({
       }
 
       this.$confirm(
-        `You are about to sell ${this.mglSold} MGL at price ${(
-          daiReturned / sellAmount
-        ).toFixed(5)} and receive back $${(daiReturned / DAI).toFixed(
-          2
-        )}. Shall we proceed?`
+        `You are selling ${this.mglSold} MGL at an average price of $${(daiReturned / sellAmount).toFixed(2)} and receive back $${(daiReturned / DAI).toFixed(2)}. Continue?`
       ).then(() => {
         this.totalMGL -= sellAmount;
         this.reserveSupply -= daiReturned;
@@ -554,6 +545,720 @@ export default Vue.extend({
         this.dividendPaid = value*1000000;
       }
       this.paySelected = value;
+    },
+    onSelection(newOption) {
+      this.selected = newOption
+    },
+    startPreset(option) {
+      let investment, mglMinted, commissionMgl, investmentNumeral, daiReturned, sellAmount, dividend;
+      switch (option) {
+        case 'Base case':
+          // invest 30M
+          investment = 30000000 * DAI;
+          this.daiInvestment = 30000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          
+          // sell 3M
+          this.mglSold = 3000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 16M
+          this.dividendPaid = 16000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 9M
+          this.mglSold = 9000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 10M
+          investment = 10000000 * DAI;
+          this.daiInvestment = 10000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 20M
+          this.dividendPaid = 20000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 10M
+          this.mglSold = 10000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 15M
+          investment = 15000000 * DAI;
+          this.daiInvestment = 15000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 25M
+          this.dividendPaid = 25000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          return
+
+        case 'Medium case':
+          // invest 50M
+          investment = 50000000 * DAI;
+          this.daiInvestment = 50000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          
+          // sell 3.5M
+          this.mglSold = 3500000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 20M
+          this.dividendPaid = 20000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 12M
+          this.mglSold = 12000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 20M
+          investment = 20000000 * DAI;
+          this.daiInvestment = 20000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 28M
+          this.dividendPaid = 28000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 3M
+          this.mglSold = 3000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 25M
+          investment = 25000000 * DAI;
+          this.daiInvestment = 25000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 35M
+          this.dividendPaid = 35000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          return
+        case 'Bull case':
+          // invest 100M
+          investment = 100000000 * DAI;
+          this.daiInvestment = 100000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          
+          // sell 5M
+          this.mglSold = 5000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 40M
+          this.dividendPaid = 40000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 17M
+          this.mglSold = 17000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 30M
+          investment = 30000000 * DAI;
+          this.daiInvestment = 30000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 50M
+          this.dividendPaid = 50000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // sell 3M
+          this.mglSold = 3000000;
+          sellAmount = this.mglSold * MGL;
+          if (!this.isOrganisationClosed) {
+              daiReturned = sellCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount,
+                  this.burntSupply
+              );
+          } else {
+              daiReturned = sellClosedCalc(
+                  this.totalMGL,
+                  this.reserveSupply,
+                  sellAmount
+              );
+          }
+          if (this.reserveSupply - daiReturned < 0 || this.totalMGL - sellAmount < 0) {
+            this.$alert("Can't sell more than the tokens in circulation");
+            return;
+          }
+          this.totalMGL -= sellAmount;
+          this.reserveSupply -= daiReturned;
+          this.totalDAI -= daiReturned;
+    
+          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
+          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // invest 40M
+          investment = 40000000 * DAI;
+          this.daiInvestment = 40000000;
+          mglMinted = buyCalc(
+            this.totalMGL,
+            this.premintedMGL * MGL,
+            investment,
+            this.buySlopeMultiplier
+          );
+          this.totalDAI += investment;
+          this.totalDaiInvested += investment;
+          this.reserveSupply += investment * this.reserveRatioDecimal;
+          this.investmentFund += investment * (1 - this.reserveRatioDecimal);
+          this.totalMGL += mglMinted;
+          commissionMgl = mglMinted * this.commission / 100;
+          this.totalMGL += commissionMgl;
+          this.commissionBalance += commissionMgl;
+    
+          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
+          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+
+          // pay 75M
+          this.dividendPaid = 75000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
+          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
+          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(3).toString());
+          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(3).toString());
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.totalMGLEvents.push(`${this.HRTotalMGL.toLocaleString()}`);
+          this.reserveSupplyEvents.push(`$${this.HRReserveSupply.toLocaleString()}`);
+          return
+      }
     }
   },
   computed: {
@@ -623,56 +1328,56 @@ export default Vue.extend({
       return 1 / this.HRSellDAIPerMGL;
     },
 
-    buyCurveData(): number[] {
-      if (this.totalDAI === 0) {
-        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      }
-      const data = [];
-      data.push(this.initialDAIInvestment / this.premintedMGL);
-      data.push(this.initialDAIInvestment / this.premintedMGL);
-      for (let i = 0; i <= 20; i++) {
-        const investAmount = 1 + i * 10000000;
-        const mglReceived =
-          buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI, this.buySlopeMultiplier) /
-          MGL;
-        data.push(investAmount / mglReceived);
-      }
-      return data;
-    },
+    // buyCurveData(): number[] {
+    //   if (this.totalDAI === 0) {
+    //     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    //   }
+    //   const data = [];
+    //   data.push(this.initialDAIInvestment / this.premintedMGL);
+    //   data.push(this.initialDAIInvestment / this.premintedMGL);
+    //   for (let i = 0; i <= 20; i++) {
+    //     const investAmount = 1 + i * 10000000;
+    //     const mglReceived =
+    //       buyCalc(this.totalMGL, this.premintedMGL * MGL, investAmount * DAI, this.buySlopeMultiplier) /
+    //       MGL;
+    //     data.push(investAmount / mglReceived);
+    //   }
+    //   return data;
+    // },
 
-    sellCurveData(): number[] {
-      if (this.reserveSupply === 0 || this.totalMGL === 0) {
-        return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      }
-      const data = [];
-      data.push(
-        (this.initialDAIInvestment / this.premintedMGL) *
-          this.reserveRatioDecimal
-      );
-      data.push(
-        (this.initialDAIInvestment / this.premintedMGL) *
-          this.reserveRatioDecimal
-      );
-      for (let i = 0; i <= 20; i++) {
-        const sellAmount = 1 + i * 10000000;
-        const mglReceived = buyCalc(
-          this.totalMGL,
-          this.premintedMGL * MGL,
-          sellAmount * DAI,
-          this.buySlopeMultiplier
-        );
-        const reserveAddition = sellAmount * DAI * this.reserveRatioDecimal;
-        const receivedDai = sellCalc(
-          this.totalMGL + mglReceived,
-          this.reserveSupply + reserveAddition,
-          mglReceived,
-          this.burntSupply
-        );
-        const daiPerMGL = receivedDai / mglReceived;
-        data.push(daiPerMGL);
-      }
-      return data;
-    },
+    // sellCurveData(): number[] {
+    //   if (this.reserveSupply === 0 || this.totalMGL === 0) {
+    //     return [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    //   }
+    //   const data = [];
+    //   data.push(
+    //     (this.initialDAIInvestment / this.premintedMGL) *
+    //       this.reserveRatioDecimal
+    //   );
+    //   data.push(
+    //     (this.initialDAIInvestment / this.premintedMGL) *
+    //       this.reserveRatioDecimal
+    //   );
+    //   for (let i = 0; i <= 20; i++) {
+    //     const sellAmount = 1 + i * 10000000;
+    //     const mglReceived = buyCalc(
+    //       this.totalMGL,
+    //       this.premintedMGL * MGL,
+    //       sellAmount * DAI,
+    //       this.buySlopeMultiplier
+    //     );
+    //     const reserveAddition = sellAmount * DAI * this.reserveRatioDecimal;
+    //     const receivedDai = sellCalc(
+    //       this.totalMGL + mglReceived,
+    //       this.reserveSupply + reserveAddition,
+    //       mglReceived,
+    //       this.burntSupply
+    //     );
+    //     const daiPerMGL = receivedDai / mglReceived;
+    //     data.push(daiPerMGL);
+    //   }
+    //   return data;
+    // },
     historyChartDataset(): any {
       const datasets = [
         {
@@ -1381,7 +2086,7 @@ footer {
   .tooltip-inner {
     background: #141414;
     color: #E1E1E1;
-    font-size: 12px;
+    font-size: 13px;
     border-radius: 16px;
     padding: 5px 10px 4px;
   }
