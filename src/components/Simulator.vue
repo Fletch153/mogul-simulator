@@ -1912,7 +1912,7 @@ footer {
     position: absolute;
     right: -300px;
     top: 0;
-    width: 300px;
+    width: 320px;
     padding: 20px;
     height: 100%;
     background: #191818;
@@ -1953,7 +1953,7 @@ footer {
           width: auto;
           font-family: Lato;
           font-weight: 700;
-          padding: 7px 7px 3px;
+          padding: 7px 0 3px 7px;
           color: $accent;
           text-align: right;
           background: #191818;
@@ -1970,7 +1970,7 @@ footer {
         }
         span {
           font-size: 16px;
-          margin-left: -4px;
+          margin-left: 3px;
           color: $accent;
           font-weight: 700;
           display: flex;
