@@ -383,7 +383,7 @@ export default Vue.extend({
     close(): void {
       const tax = this.totalDaiInvested;
       this.$confirm(
-        `You are paying ${(tax / MGL).toFixed(2)} USD to close the Organisation. Continue?`
+        `You are paying ${numeral((tax / MGL).toFixed(2)).format('0,0')} USD to close the Organisation. Continue?`
       ).then(() => {
         this.isOrganisationClosed = true;
         this.reserveSupply += tax;
@@ -403,7 +403,7 @@ export default Vue.extend({
         this.buySlopeMultiplier
       );
       this.$confirm(
-        `You are buying ${(mglMinted / MGL).toFixed(2)} MGL at an average price of $${(investment / mglMinted).toFixed(2)}. Continue?`
+        `You are buying ${numeral((mglMinted / MGL).toFixed(2)).format('0,0')} MGL at an average price of $${(investment / mglMinted).toFixed(2)}. Continue?`
       ).then(() => {
         this.totalDAI += investment;
         this.totalDaiInvested += investment;
@@ -450,7 +450,7 @@ export default Vue.extend({
       }
 
       this.$confirm(
-        `You are selling ${this.mglSold} MGL at an average price of $${(daiReturned / sellAmount).toFixed(2)} and receive back $${(daiReturned / DAI).toFixed(2)}. Continue?`
+        `You are selling ${numeral(this.mglSold).format('0,0')} MGL at an average price of $${(daiReturned / sellAmount).toFixed(2)} and receive back $${numeral((daiReturned / DAI).toFixed(2)).format('0,0')}. Continue?`
       ).then(() => {
         this.totalMGL -= sellAmount;
         this.reserveSupply -= daiReturned;
