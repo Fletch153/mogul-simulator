@@ -1463,11 +1463,6 @@ export default Vue.extend({
         chart: {
           id: 'curve-chart',
           background: '#1E1E1E',
-          events: {
-            mouseMove: function(event, chartContext, config) {
-              console.log('makak taka');
-            }
-          },
           animations: {
             enabled: true,
             easing: 'easeinout',
