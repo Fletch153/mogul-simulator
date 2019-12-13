@@ -343,7 +343,7 @@ export default Vue.extend({
       const flatSellCurve = {
         name: 'Sell',
         type: 'area',
-        data: [this.HRFlatSellPrice, this.HRFlatSellPrice, this.HRFlatSellPrice, this.HRFlatSellPrice]
+        data: [this.HRFlatSellPrice, this.HRFlatSellPrice]
       }
       console.log(this.HRFlatSellPrice);
       return this.closedSeries ? [flatSellCurve] : [buy, sell]
