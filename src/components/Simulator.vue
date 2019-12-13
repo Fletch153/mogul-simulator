@@ -45,7 +45,7 @@
                     <button class="common" @click="invest">Invest</button>
                     <HelpIcon class="help-icon" v-tooltip.bottom="'Dollars you want to invest'" />
                   </div>
-                  <label>Millions</label>
+                  <label>Millions <span>($)</span></label>
                   <div class="input-wrapper" v-if="this.investSelected === 'Custom'">
                     <vue-numeric currency="$" separator="," class="usd-label" v-model="daiInvestment"></vue-numeric>
                     <span>USD</span>
@@ -79,7 +79,7 @@
                   <button class="common" @click="payDividend">Pay</button>
                   <HelpIcon class="help-icon" v-tooltip.bottom="'Dollar value of the dividend Mogul pays to investors'" />
                 </div>
-                  <label>Millions</label>
+                  <label>Millions <span>($)</span></label>
                   <div class="input-wrapper" v-if="this.paySelected === 'Custom'">
                     <vue-numeric currency="$" separator="," class="usd-label" v-model="dividendPaid"></vue-numeric>
                     <span>USD</span>
@@ -90,8 +90,11 @@
         </div>
       </section>
       <section class="chart-wrapper">
-        <div class="centered-box" v-tooltip="'Investors can also sell tokens on the secondary market where the Buy/Sell prices will be in this range.<br />The specific range depends on market dynamics. Secondary market selling does not impact this model,<br />but allows an investor to realize their liquidity at a higher price and a buyer to buy tokens at a lower<br />price. The Buy/Sell functions are only used when demand outpaces supply on the secondary<br />market and vice versa.'"></div>
-        <apexchart width=100% height=100% type="area" :series="historyChartDataset" :options="historyChartOptions" />
+        <div class="label-box" v-tooltip.left="'Investors can also sell tokens on the secondary market where the Buy/Sell prices will be in this range.<br />The specific range depends on market dynamics. Secondary market selling does not impact this model,<br />but allows an investor to realize their liquidity at a higher price and a buyer to buy tokens at a lower<br />price. The Buy/Sell functions are only used when demand outpaces supply on the secondary<br />market and vice versa.'">
+          <HelpIcon />
+          <label>Secondary<br />Market</label>
+        </div>
+        <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" />
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
           <h2>Parameter settings</h2>
@@ -103,7 +106,7 @@
               </div>
             </li>
             <li class="level">
-              <label class="level-left small">MGL and Initial Investment</label>
+              <label class="level-left">Initial Investment</label>
               <div class="level-right inputs">
                 <vue-numeric size="10" currency="$" separator="," v-model="initialDAIInvestment"></vue-numeric>
               </div>
@@ -116,7 +119,7 @@
                 </div>
                 <div class="toggle-content" v-bind:class="{ hidden: !showBuySlope }">
                   <div class="level">
-                    <label class="level-left">Buy slope multiplier</label>
+                    <label class="level-left">Buy Slope</label>
                     <div class="level-right inputs">
                       <vue-numeric size="10" separator="," v-model="buySlopeMultiplier"></vue-numeric>
                     </div>
@@ -174,8 +177,8 @@
           <label v-tooltip.top="'Dollars being invested in movies'">Investment Fund: </label>
         </div>
         <div class="data-fields">
-          <p>${{HRTotalDAIInvested.toFixed(0).toLocaleString()}}M</p>
-          <p>${{HRInvestmentFund.toFixed(1).toLocaleString()}}M</p>
+          <p>${{HRTotalDAIInvested}}</p>
+          <p>${{HRInvestmentFund}}</p>
         </div>
       </div>
     </section>
@@ -317,7 +320,8 @@ export default Vue.extend({
       sellSelected: 1,
       paySelected: 1,
       selected: 'Base Case',
-      showBuySlope: false
+      showBuySlope: false,
+      closedSeries: false
     };
   },
   mounted () {
@@ -325,6 +329,26 @@ export default Vue.extend({
     if (currentPath == '/public') this.initStart()
   },
   methods: {
+    series() : any {
+      const buy = {
+        name: 'Buy',
+        type: 'area',
+        data: this.historicalBuyPrices
+      }
+      const sell = {
+        name: 'Sell',
+        type: 'line',
+        data: this.historicalSellPrices
+      }
+      const flatSellCurve = {
+        name: 'Sell',
+        type: 'area',
+        data: [this.HRFlatSellPrice, this.HRFlatSellPrice, this.HRFlatSellPrice, this.HRFlatSellPrice]
+      }
+      console.log(this.HRFlatSellPrice);
+      return this.closedSeries ? [flatSellCurve] : [buy, sell]
+
+    },
     initStart() {
       this.start();
       this.settingsExpanded = false;
@@ -383,24 +407,26 @@ export default Vue.extend({
       this.reserveSupplyEvents.push('$0');
       this.historicalEvents.push('Series A');
       this.tooltipData.push('Series A');
-      this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-      this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-      this.historicalEvents.push(`Invested $${(this.initialDAIInvestment / 1000000).toFixed(1)}M`);
-      this.tooltipData.push(`Invested <strong>$${(this.initialDAIInvestment / 1000000).toFixed(1)}M</strong>`);
-      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0.[0]A'));
+      this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0.[0]A'));
+      this.historicalEvents.push(`Invested $${numeral(this.initialDAIInvestment).format('0.[0]a').toUpperCase()}`);
+      this.tooltipData.push(`Invested <strong>$${numeral(this.initialDAIInvestment).format('0.[0]a').toUpperCase()}</strong>`);
+      this.InvestmentFundEvents.push(`$${numeral(this.HRInvestmentFund).format('0.[0]')}M`);
+      this.totalDAIInvestedEvents.push(`$${numeral(this.HRTotalDAIInvested).format('0.[0]')}M`);
       this.totalMGLEvents.push(`${this.HRTotalMGL}`);
       this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
       // this.settingsExpanded = false;
     },
     close(): void {
       const tax = this.totalDaiInvested;
-      this.$confirm(
-        `You are paying ${numeral((tax / MGL).toFixed(2)).format('0,0.[00]')} USD to close the Organisation. Continue?`
+      this.$prompt(
+        `You are paying ${numeral((tax / MGL).toFixed(2)).format('0,0.[00]')} USD to close the Organisation. Every investor will receive $${this.HRFlatSellPrice} per token. Continue?`,
+        (tax / MGL)
       ).then(() => {
         this.isOrganisationClosed = true;
         this.reserveSupply += tax;
         this.totalDAI += tax;
+        this.closedSeries = true;
       })
     },
     invest(): void {
@@ -416,7 +442,7 @@ export default Vue.extend({
         this.buySlopeMultiplier
       );
       this.$confirm(
-        `You are buying ${numeral((mglMinted / MGL).toFixed(2)).format('0,0.[00]')} MGL at an average price of $${(investment / mglMinted).toFixed(2)}. Continue?`
+        `You are buying ${numeral((mglMinted / MGL).toFixed(2)).format('0,0.[00]')} MGL at an average price of $${numeral(investment / mglMinted).format('0.[00]')}. Continue?`
       ).then(() => {
         this.totalDAI += investment;
         this.totalDaiInvested += investment;
@@ -427,13 +453,13 @@ export default Vue.extend({
         this.totalMGL += commissionMgl;
         this.commissionBalance += commissionMgl;
   
-        const investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-        this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-        this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-        this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-        this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+        const investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+        this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+        this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+        this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+        this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
         this.totalMGLEvents.push(`${this.HRTotalMGL}`);
         this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
       })
@@ -463,18 +489,18 @@ export default Vue.extend({
       }
 
       this.$confirm(
-        `You are selling ${numeral(this.mglSold).format('0,0.[00]')} MGL at an average price of $${(daiReturned / sellAmount).toFixed(2)} and receive back $${numeral((daiReturned / DAI).toFixed(2)).format('0,0.[00]')}. Continue?`
+        `You are selling ${numeral(this.mglSold).format('0,0.[00]')} MGL at an average price of $${(daiReturned / sellAmount).toFixed(2)} and receive back $${numeral(daiReturned / DAI).format('0,0.[00]')}. Continue?`
       ).then(() => {
         this.totalMGL -= sellAmount;
         this.reserveSupply -= daiReturned;
         this.totalDAI -= daiReturned;
   
-        this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-        this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
+        this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+        this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
         this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
         this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+        this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+        this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
         this.totalMGLEvents.push(`${this.HRTotalMGL}`);
         this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
       })
@@ -493,7 +519,7 @@ export default Vue.extend({
       this.burntSupply += tokensToBurn;
       this.totalMGL -= tokensToBurn;
 
-      const burnNumeral = numeral(this.mglToBurn).format("0.0A");
+      const burnNumeral = numeral(this.mglToBurn).format("0.[0]A");
       this.historicalEvents.push(`Burned ${burnNumeral} MGL`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toString());
@@ -505,12 +531,12 @@ export default Vue.extend({
       this.reserveSupply += dividend * this.dividendRatioDecimal;
       this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-      this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-      this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
+      this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+      this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
       this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
       this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+      this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+      this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
       this.totalMGLEvents.push(`${this.HRTotalMGL}`);
       this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
     },
@@ -583,13 +609,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
@@ -618,12 +644,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -634,12 +660,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -668,12 +694,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -695,13 +721,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -712,12 +738,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -746,12 +772,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -773,29 +799,23 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
           // pay 25M
-          this.dividendPaid = 25000000;
-          dividend = this.dividendPaid * DAI;
-          this.totalDAI += dividend;
-          this.reserveSupply += dividend * this.dividendRatioDecimal;
-          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
-
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           this.selectInvest(1);
@@ -822,13 +842,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
@@ -857,12 +877,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -873,12 +893,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -907,12 +927,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -934,13 +954,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -951,12 +971,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -985,12 +1005,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1012,13 +1032,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1029,12 +1049,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           this.selectInvest(1);
@@ -1061,13 +1081,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
@@ -1096,12 +1116,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1112,12 +1132,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1146,12 +1166,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1173,13 +1193,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1190,12 +1210,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1224,12 +1244,12 @@ export default Vue.extend({
           this.reserveSupply -= daiReturned;
           this.totalDAI -= daiReturned;
     
-          this.historicalEvents.push(`Sold ${(this.mglSold / 1000000).toFixed(1)}M MGL`);
-          this.tooltipData.push(`Sold <strong>${(this.mglSold / 1000000).toFixed(1)}M MGL</strong><em>Average Price <strong>$${(daiReturned / sellAmount).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Sold ${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL`);
+          this.tooltipData.push(`Sold <strong>${numeral(this.mglSold).format('0,0.[0]a').toUpperCase()} MGL</strong><em>Average Price <strong>$${numeral(daiReturned / sellAmount).format('0,0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1251,13 +1271,13 @@ export default Vue.extend({
           this.totalMGL += commissionMgl;
           this.commissionBalance += commissionMgl;
     
-          investmentNumeral = numeral(this.daiInvestment).format("0.0A");
-          this.historicalEvents.push(`Invested $${(this.daiInvestment / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Invested <strong>$${(this.daiInvestment / 1000000).toFixed(1)}M</strong><em>Average Price <strong>$${(investment / mglMinted).toFixed(2)}</strong></em>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          investmentNumeral = numeral(this.daiInvestment).format("0.[0]A");
+          this.historicalEvents.push(`Invested $${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Invested <strong>$${numeral(this.daiInvestment).format('0.[0]a').toUpperCase()}</strong><em>Average Price <strong>$${numeral(investment / mglMinted).format('0.[00]')}</strong></em>`);
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
@@ -1268,12 +1288,12 @@ export default Vue.extend({
           this.reserveSupply += dividend * this.dividendRatioDecimal;
           this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
 
-          this.historicalEvents.push(`Paid dividend of $${(this.dividendPaid / 1000000).toFixed(1)}M`);
-          this.tooltipData.push(`Paid dividend of <strong>$${(this.dividendPaid / 1000000).toFixed(1)}M</strong>`);
-          this.historicalSellPrices.push(this.HRSellDAIPerMGL.toFixed(2).toString());
-          this.historicalBuyPrices.push(this.HRBuyDAIPerMGL.toFixed(2).toString());
-          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund.toFixed(1).toLocaleString()}M`);
-          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested.toFixed(1).toLocaleString()}M`);
+          this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
+          this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
+          this.historicalBuyPrices.push(numeral(this.HRBuyDAIPerMGL).format('0,0.[00]'));
+          this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
+          this.InvestmentFundEvents.push(`$${this.HRInvestmentFund}`);
+          this.totalDAIInvestedEvents.push(`$${this.HRTotalDAIInvested}`);
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           this.selectInvest(1);
@@ -1296,7 +1316,7 @@ export default Vue.extend({
     },
 
     HRTotalMGL(): string {
-      return numeral((this.totalMGL / MGL).toFixed(2).toLocaleString()).format('0,0.[00]');
+      return numeral((this.totalMGL / MGL).toFixed(2).toLocaleString()).format('0,0.[00]a').toUpperCase();
     },
 
     HRCommissionBalance(): number {
@@ -1311,16 +1331,20 @@ export default Vue.extend({
       return this.totalDAI / DAI;
     },
 
-    HRTotalDAIInvested(): number {
-      return this.totalDaiInvested / DAI / 1000000;
+    HRTotalDAIInvested(): string {
+      return numeral(this.totalDaiInvested / DAI).format('0,0.[0]a').toUpperCase();
     },
 
     HRReserveSupply(): string {
-      return numeral((this.reserveSupply / DAI).toFixed(2).toLocaleString()).format('0,0.[00]');
+      return numeral((this.reserveSupply / DAI)).format('0,0.[00]a').toUpperCase();
     },
 
-    HRInvestmentFund(): number {
-      return this.investmentFund / DAI / 1000000;
+    HRInvestmentFund(): string {
+      return numeral(this.investmentFund / DAI).format('0,0.[0]a').toUpperCase();
+    },
+
+    HRFlatSellPrice(): string {
+      return numeral((this.reserveSupply / DAI)/(this.totalMGL / MGL)).format('0,0.[00]');
     },
 
     HRBuyMGLPerDAI(): number {
@@ -1403,21 +1427,6 @@ export default Vue.extend({
     //   }
     //   return data;
     // },
-    historyChartDataset(): any {
-      const datasets = [
-        {
-          name: 'Buy',
-          type: 'area',
-          data: this.historicalBuyPrices
-        },
-        {
-          name: 'Sell',
-          type: 'line',
-          data: this.historicalSellPrices
-        }
-      ];
-      return datasets;
-    },
     historyChartOptions(): any {
       return {
             dataLabels: {
@@ -1440,7 +1449,7 @@ export default Vue.extend({
                 opacity: 0.05
             }
         },
-        colors: ['#64B7F4','#71D69B'],
+        colors: this.closedSeries ? ['#71D69B'] : ['#64B7F4', '#71D69B'],
         theme: {
           mode: 'dark'
         },
@@ -1458,7 +1467,7 @@ export default Vue.extend({
           followCursor: true,
           intersect: true,
           shared: false,
-          custom: this.customTooltip
+          custom: this.closedSeries ? undefined : this.customTooltip
         },
         chart: {
           id: 'curve-chart',
@@ -1504,6 +1513,7 @@ export default Vue.extend({
             show: false
           },
           labels: {
+            trim: false,
             style: {
               color: '#8B8B8B',
               fontSize: '14px',
@@ -1891,7 +1901,7 @@ footer {
   height: 100%;
   position: relative;
   overflow: hidden;
-  padding: 100px;
+  padding: 40px 65px 50px 10px;
   > div {
     display: flex;
     flex: 1 0 80%;
@@ -1992,7 +2002,7 @@ footer {
     .param-actions-wrapper {
       display: flex;
       flex-direction: row;
-      justify-content: flex-end;
+      justify-content: flex-start;
       button {
         font-family: Lato;
         background: $accent;
@@ -2257,13 +2267,22 @@ footer {
   color: #cdcdcd !important;
 }
 
-.centered-box {
+.label-box {
   position: absolute;
   z-index: 3;
-  left: calc(50% - 50px);
-  top: calc(50%);
-  width: 100px;
-  height: 100px;
+  right: 20px;
+  top: calc(50% - 15px);
+  display: flex;
+  flex-direction: row;
+  label {
+    margin-left: 7px;
+    font-size: 13px;
+    color: #777;
+    line-height: 14px;
+    text-align: left;
+    position: relative;
+    top: -7px;
+  }
 }
 
 .preset-wrapper {
