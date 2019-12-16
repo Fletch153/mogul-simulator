@@ -94,6 +94,7 @@
           <HelpIcon />
           <label>Secondary<br />Market</label>
         </div>
+        <p class="case-wrapper" v-bind:class="{ hidden: !activeCase }">{{activeCase}}</p>
         <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" />
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
@@ -321,7 +322,13 @@ export default Vue.extend({
       paySelected: 1,
       selected: 'Base Case',
       showBuySlope: false,
-      closedSeries: false
+      closedSeries: false,
+      caseDetails: {
+        baseCase: 'Mogul raises $55M over 5 years and produces 15 movies, each with returns below industry comparables. Average amount of investor churn.',
+        mediumCase: 'Mogul raises $95M over 5 years and produces 20 movies, each with returns below industry comparables. Average amount of investor churn.',
+        bullCase: 'Mogul raises $170M over 5 years and produces 30 movies, each with average industry returns. Average amount of investor churn.'
+      },
+      activeCase: undefined
     };
   },
   mounted () {
@@ -591,6 +598,7 @@ export default Vue.extend({
       let investment, mglMinted, commissionMgl, investmentNumeral, daiReturned, sellAmount, dividend;
       switch (option) {
         case 'Base Case':
+          this.activeCase = this.caseDetails.baseCase
           // invest 30M
           investment = 30000000 * DAI;
           this.daiInvestment = 30000000;
@@ -824,6 +832,7 @@ export default Vue.extend({
           return
 
         case 'Medium Case':
+          this.activeCase = this.caseDetails.mediumCase
           // invest 50M
           investment = 50000000 * DAI;
           this.daiInvestment = 50000000;
@@ -1063,6 +1072,7 @@ export default Vue.extend({
           return
 
         case 'Bull Case':
+          this.activeCase = this.caseDetails.bullCase
           // invest 100M
           investment = 100000000 * DAI;
           this.daiInvestment = 100000000;
@@ -1895,13 +1905,30 @@ footer {
   }
 }
 
+.case-wrapper {
+  position: absolute;
+  padding: 10px;
+  font-size: 13px;
+  line-height: 14px;
+  background: #171716;
+  border-radius: 3px;
+  width: 440px;
+  color: white;
+  top: 25px;
+  left: calc(50% - 220px);
+  visibility: visible;
+  &.hidden {
+    visibility: hidden;
+  }
+}
+
 .chart-wrapper {
   display: flex;
   flex-grow: 1;
   height: 100%;
   position: relative;
   overflow: hidden;
-  padding: 40px 65px 50px 10px;
+  padding: 80px 65px 50px 10px;
   > div {
     display: flex;
     flex: 1 0 80%;
