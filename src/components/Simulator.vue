@@ -303,7 +303,7 @@ export default Vue.extend({
       daiInvestment: 1000000,
       mglSold: 1000000,
       dividendPaid: 1000000,
-      dividendRatio: 20,
+      dividendRatio: 100,
       historicalEvents: new Array<string>(),
       tooltipData: new Array<string>(),
       investmentFundEvents: new Array<string>(),
@@ -434,6 +434,7 @@ export default Vue.extend({
         this.reserveSupply += tax;
         this.totalDAI += tax;
         this.closedSeries = true;
+        this.activeCase = '';
       })
     },
     invest(): void {
@@ -549,6 +550,7 @@ export default Vue.extend({
     },
 
     reset(): void {
+      this.closedSeries = false;
       this.isOrganisationClosed = false;
       this.totalMGL = 0;
       this.totalDAI = 0;
@@ -563,7 +565,7 @@ export default Vue.extend({
       this.commissionBalance = 0;
       this.mglToBurn = 0;
       this.burntSupply = 0;
-      this.dividendRatio = 20;
+      this.dividendRatio = 100;
       this.tooltipData = new Array<string>();
       this.historicalEvents = new Array<string>();
       this.InvestmentFundEvents = new Array<string>();
