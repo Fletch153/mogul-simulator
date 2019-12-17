@@ -434,7 +434,7 @@ export default Vue.extend({
         this.reserveSupply += tax;
         this.totalDAI += tax;
         this.closedSeries = true;
-        this.activeCase = '';
+        this.activeCase = undefined;
       })
     },
     invest(): void {
@@ -552,6 +552,7 @@ export default Vue.extend({
     reset(): void {
       this.closedSeries = false;
       this.isOrganisationClosed = false;
+      this.activeCase = undefined;
       this.totalMGL = 0;
       this.totalDAI = 0;
       this.totalDaiInvested = 0;
