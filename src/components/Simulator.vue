@@ -12,7 +12,7 @@
           <p>Simulation</p>
         </div>
       </div>
-      <div class="level-right simulate-wrapper" v-tooltip.bottom="'Walk through a sequence of events to learn how a Continuous Organization works'">
+      <div @click="startSimulation" class="level-right simulate-wrapper" v-tooltip.bottom="'Walk through a sequence of events to learn how a Continuous Organization works'">
         <LineWideGraphic class="line-graphic line-02" />
         <LineGraphic class="line-graphic line-01" />
         <span>Simulate</span>
@@ -25,11 +25,11 @@
       <section class="actions-wrapper">
         <div class="actions-list">
           <div class="overall-wrapper">
-            <div class="data-item">
+            <div class="data-item" v-intro="'The price to buy one MGL token'" data-step="1">
               <h2 class="buy">${{HRBuyDAIPerMGL.toFixed(2)}}</h2>
               <label><span>Buy</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Cost to buy 1 MGL'" /></label>
             </div>
-            <div class="data-item">
+            <div class="data-item" v-intro="'The price you can sell an MGL token for at any time'" data-step="2">
               <h2 class="sell">${{HRSellDAIPerMGL.toFixed(2)}}</h2>
               <label><span>Sell</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Price to sell 1 MGL'" /></label>
             </div>
@@ -42,7 +42,7 @@
                     <ul class="segmented-control">
                       <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === investSelected ? activeStyle : ''" @click="selectInvest(option.value)">{{option.label}}</li>
                     </ul>
-                    <button class="common" @click="invest">Invest</button>
+                    <button class="common" @click="invest" v-intro="'How much money you are investing'" data-step="3">Invest</button>
                     <HelpIcon class="help-icon" v-tooltip.bottom="'Dollars you want to invest'" />
                   </div>
                   <label>Millions <span>($)</span></label>
@@ -59,7 +59,7 @@
                   <ul class="segmented-control">
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === sellSelected ? activeStyle : ''" v-bind:class="{ active: option.selected }" @click="selectSell(option.value)">{{option.label}}</li>
                   </ul>
-                  <button class="common" @click="sell" v-if={}>Sell</button>
+                  <button class="common" @click="sell" v-intro="'How many MGL you are selling'" data-step="4">Sell</button>
                   <HelpIcon class="help-icon" v-tooltip.bottom="'How many MGL you want to sell'"/>
                 </div>
                   <label>Millions</label>
@@ -76,7 +76,7 @@
                   <ul class="segmented-control">
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === paySelected ? activeStyle : ''" @click="selectPay(option.value)">{{option.label}}</li>
                   </ul>
-                  <button class="common" @click="payDividend">Pay</button>
+                  <button class="common" @click="payDividend" v-intro="'Profits that are shared with MGL holders'" data-step="5">Pay</button>
                   <HelpIcon class="help-icon" v-tooltip.bottom="'Dollar value of the dividend Mogul pays to investors'" />
                 </div>
                   <label>Millions <span>($)</span></label>
@@ -95,7 +95,7 @@
           <label>Secondary<br />Market</label>
         </div>
         <p class="case-wrapper" v-bind:class="{ hidden: !activeCase }">{{activeCase}}</p>
-        <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" />
+        <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" v-intro="'The blue line shows the price new investors pay to purchase MGL and the green line shows the price investors can sell their MGL for at any time. The area between these curves is called the secondary market. This is where investors can sell to other users. Buying and selling on secondary markets does not impact this model. It allows current investors to sell at a higher price than the green line, and new investors to buy at a price lower than the blue line.'" data-step="9"/>
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
           <h2>Parameter settings</h2>
@@ -167,8 +167,8 @@
           <label v-tooltip.top="'Dollars in escrow for investors to sell into'">Liquidity Pool: </label>
         </div>
         <div class="data-fields">
-          <p>{{HRTotalMGL}}</p>
-          <p>${{HRReserveSupply}}</p>
+          <p v-intro="'Total number of tokens outstanding. This grows as people invest because tokens are minted and gets smaller as people sell because tokens are burned'" data-step="8">{{HRTotalMGL}}</p>
+          <p v-intro="'We keep a reserve of money that investors can withdraw from at any time'" data-step="7">${{HRReserveSupply}}</p>
         </div>
       </div>
 
@@ -179,7 +179,7 @@
         </div>
         <div class="data-fields">
           <p>${{HRTotalDAIInvested}}</p>
-          <p>${{HRInvestmentFund}}</p>
+          <p v-intro="'How much money we\'re actively investing in movies. This grows when new investors invest, but remains unchanged when investors sell their tokens'" data-step="6">${{HRInvestmentFund}}</p>
         </div>
       </div>
     </section>
@@ -194,6 +194,7 @@ import VueNumeric from "vue-numeric";
 import VueApexCharts from "vue-apexcharts";
 import { VTooltip, VPopover, VClosePopover } from "v-tooltip";
 import VueSimpleAlert from "vue-simple-alert";
+import VueIntro from 'vue-introjs';
 import SelectBox from "./common/SelectBox.vue";
 
 // svg graphics
@@ -271,6 +272,9 @@ Vue.directive('tooltip', VTooltip)
 Vue.directive('close-popover', VClosePopover)
 Vue.component('v-popover', VPopover)
 Vue.use(VueSimpleAlert, { confirmButtonText: 'Yes' });
+Vue.use(VueIntro, { showBullets: false });
+
+import 'intro.js/introjs.css';
 
 export default Vue.extend({
   name: "Simulator",
@@ -332,10 +336,17 @@ export default Vue.extend({
     };
   },
   mounted () {
-    let currentPath = this.$route.path
-    if (currentPath == '/public') this.initStart()
+    let currentPath = this.$route.path;
+    if (currentPath == '/public') this.initStart();
+    this.$intro().onexit(function() {
+      alert("exit of introduction");
+    });
   },
   methods: {
+    startSimulation() : void {
+      this.$intro().start();
+      this.$intro().showHints();
+    },
     series() : any {
       const buy = {
         name: 'Buy',
@@ -352,7 +363,6 @@ export default Vue.extend({
         type: 'area',
         data: [this.HRFlatSellPrice, this.HRFlatSellPrice]
       }
-      console.log(this.HRFlatSellPrice);
       return this.closedSeries ? [flatSellCurve] : [buy, sell]
 
     },
@@ -2355,5 +2365,70 @@ footer {
       display: none;
     }
   }
+}
+
+.introjs-overlay {
+  background: -moz-radial-gradient(center,ellipse farthest-corner,rgba(0,0,0,0.6) 0,rgba(0,0,0,0.4) 100%);
+  background: -webkit-gradient(radial,center center,0px,center center,100%,color-stop(0%,rgba(0,0,0,0.6)),color-stop(100%,rgba(0,0,0,0.4)));
+  background: -webkit-radial-gradient(center,ellipse farthest-corner,rgba(0,0,0,0.6) 0,rgba(0,0,0,0.4) 100%);
+  background: -o-radial-gradient(center,ellipse farthest-corner,rgba(0,0,0,0.6) 0,rgba(0,0,0,0.4) 100%);
+  background: -ms-radial-gradient(center,ellipse farthest-corner,rgba(0,0,0,0.6) 0,rgba(0,0,0,0.4) 100%);
+  background: radial-gradient(center,ellipse farthest-corner,rgba(0,0,0,0.6) 0,rgba(0,0,0,0.4) 100%);
+}
+
+.introjs-tooltip {
+  color: black;
+  font-size: 14px;
+  line-height: 16px;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.introjs-helperLayer {
+  border-radius: 16px;
+  border: none;
+}
+
+.introjs-helperNumberLayer {
+  background: $accent;
+}
+
+.introjs-button, .introjs-disabled, .introjs-nextbutton {
+  background: $accent !important;
+  color: black;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-shadow: none;
+  border: none;
+  font-weight: 700;
+  margin: 5px;
+  margin-bottom: 0;
+  margin-top: 10px;
+  &:hover {
+    background: $accent-lighten-10;
+    color: black;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    text-shadow: none;
+    border: none;
+    font-weight: 700;
+  }
+}
+
+.introjs-disabled {
+  opacity: 0.5;
+  &:hover {
+    background: $accent;
+  }
+}
+
+.introjs-bullets {
+  display: none;
+}
+
+.introjs-relativePosition {
+  color: black;
 }
 </style>

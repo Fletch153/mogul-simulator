@@ -5,6 +5,7 @@ const HtmlPlugin           = require('html-webpack-plugin');
 const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 const helpers              = require('./helpers');
 const isDev                = process.env.NODE_ENV === 'development';
+const webpack              = require('webpack');
 
 const webpackConfig = {
   entry: {
@@ -85,7 +86,10 @@ const webpackConfig = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new HtmlPlugin({ template: "index.html", chunksSortMode: "dependency" })
+    new HtmlPlugin({ template: "index.html", chunksSortMode: "dependency" }),
+    new webpack.ProvidePlugin({
+      introJs: ['intro.js']
+    })
   ]
 };
 
