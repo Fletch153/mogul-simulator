@@ -25,11 +25,11 @@
       <section class="actions-wrapper">
         <div class="actions-list">
           <div class="overall-wrapper">
-            <div class="data-item">
+            <div class="data-item" v-intro="'The price to buy one MGL token'" data-step="1">
               <h2 class="buy">${{HRBuyDAIPerMGL.toFixed(2)}}</h2>
               <label><span>Buy</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Cost to buy 1 MGL'" /></label>
             </div>
-            <div class="data-item">
+            <div class="data-item" v-intro="'The price you can sell an MGL token for at any time'" data-step="2">
               <h2 class="sell">${{HRSellDAIPerMGL.toFixed(2)}}</h2>
               <label><span>Sell</span> <HelpIcon class="help-icon" v-tooltip.bottom="'Price to sell 1 MGL'" /></label>
             </div>
@@ -42,7 +42,7 @@
                     <ul class="segmented-control">
                       <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === investSelected ? activeStyle : ''" @click="selectInvest(option.value)">{{option.label}}</li>
                     </ul>
-                    <button class="common" @click="invest">Invest</button>
+                    <button class="common" @click="invest" v-intro="'How much money you are investing'" data-step="3">Invest</button>
                     <HelpIcon class="help-icon" v-tooltip.bottom="'Dollars you want to invest'" />
                   </div>
                   <label>Millions <span>($)</span></label>
@@ -59,7 +59,7 @@
                   <ul class="segmented-control">
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === sellSelected ? activeStyle : ''" v-bind:class="{ active: option.selected }" @click="selectSell(option.value)">{{option.label}}</li>
                   </ul>
-                  <button class="common" @click="sell" v-intro="'Selling tokens - the investment fund will not be touched, but the liquidity pool funds will fall down'" data-step="6">Sell</button>
+                  <button class="common" @click="sell" v-intro="'How many MGL you are selling'" data-step="4">Sell</button>
                   <HelpIcon class="help-icon" v-tooltip.bottom="'How many MGL you want to sell'"/>
                 </div>
                   <label>Millions</label>
@@ -76,7 +76,7 @@
                   <ul class="segmented-control">
                     <li v-for="option in segmentedControlOptions" v-bind:key="option.value" :style="option.value === paySelected ? activeStyle : ''" @click="selectPay(option.value)">{{option.label}}</li>
                   </ul>
-                  <button class="common" @click="payDividend" v-intro="'Pay dividend (for example of $30M) is 50% of movie profits'" data-step="5">Pay</button>
+                  <button class="common" @click="payDividend" v-intro="'Profits that are shared with MGL holders'" data-step="5">Pay</button>
                   <HelpIcon class="help-icon" v-tooltip.bottom="'Dollar value of the dividend Mogul pays to investors'" />
                 </div>
                   <label>Millions <span>($)</span></label>
@@ -95,7 +95,7 @@
           <label>Secondary<br />Market</label>
         </div>
         <p class="case-wrapper" v-bind:class="{ hidden: !activeCase }">{{activeCase}}</p>
-        <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" v-intro="'Users can also sell on the secondary market to other users, and that this doesn\'t impact this model, and that the curves are only used when orderbook liquidity is exhausted'" data-step="7"/>
+        <apexchart width=100% height=100% type="area" :series="series()" :options="historyChartOptions" v-intro="'The blue line shows the price new investors pay to purchase MGL and the green line shows the price investors can sell their MGL for at any time. The area between these curves is called the secondary market. This is where investors can sell to other users. Buying and selling on secondary markets does not impact this model. It allows current investors to sell at a higher price than the green line, and new investors to buy at a price lower than the blue line.'" data-step="9"/>
         <div class="overlay" v-bind:class="{ hidden: !settingsExpanded }"></div>
         <section class="administration-wrapper" v-bind:class="{ visible: settingsExpanded, hidden: !showSettings }">
           <h2>Parameter settings</h2>
@@ -144,8 +144,8 @@
             </li>
           </ul>
           <div class="param-actions-wrapper">
-            <button class="primary" @click="start" v-intro="'Mogul has invested in its own company to start the c-org'" data-step="1">Start</button>
-            <button class="secondary" @click="close" v-intro="'Each user gets paid out pro rata the cash on hand of the business'" data-step="8">Close</button>
+            <button class="primary" @click="start">Start</button>
+            <button class="secondary" @click="close">Close</button>
             <button class="secondary" @click="reset">Reset</button>
           </div>
           <div class="preset-wrapper">
@@ -167,8 +167,8 @@
           <label v-tooltip.top="'Dollars in escrow for investors to sell into'">Liquidity Pool: </label>
         </div>
         <div class="data-fields">
-          <p v-intro="'Tokens are minted and burned through this'" data-step="4">{{HRTotalMGL}}</p>
-          <p v-intro="'We keep a reserve of 20% that investors can withdraw funds from at any time'" data-step="3">${{HRReserveSupply}}</p>
+          <p v-intro="'Total number of tokens outstanding. This grows as people invest because tokens are minted and gets smaller as people sell because tokens are burned'" data-step="8">{{HRTotalMGL}}</p>
+          <p v-intro="'We keep a reserve of money that investors can withdraw from at any time'" data-step="7">${{HRReserveSupply}}</p>
         </div>
       </div>
 
@@ -179,7 +179,7 @@
         </div>
         <div class="data-fields">
           <p>${{HRTotalDAIInvested}}</p>
-          <p v-intro="'How much money we\'re actively investing in movies'" data-step="2">${{HRInvestmentFund}}</p>
+          <p v-intro="'How much money we\'re actively investing in movies. This grows when new investors invest, but remains unchanged when investors sell their tokens'" data-step="6">${{HRInvestmentFund}}</p>
         </div>
       </div>
     </section>
@@ -344,8 +344,6 @@ export default Vue.extend({
   },
   methods: {
     startSimulation() : void {
-      this.showSettings = true;
-      this.start();
       this.$intro().start();
       this.$intro().showHints();
     },
