@@ -149,7 +149,7 @@
             <button class="secondary" @click="reset">Reset</button>
           </div>
           <div class="preset-wrapper">
-            <select-box :options="['Base Case', 'Medium Case', 'Bull Case']" v-on:onSelect="onSelection" :selected="selected"></select-box>
+            <select-box :options="['Bear Case', 'Average Case', 'Bull Case']" v-on:onSelect="onSelection" :selected="selected"></select-box>
             <div class="play" @click="startPreset(selected)"></div>
           </div>
         </section>
@@ -324,12 +324,12 @@ export default Vue.extend({
       investSelected: 1,
       sellSelected: 1,
       paySelected: 1,
-      selected: 'Base Case',
+      selected: 'Bear Case',
       showBuySlope: false,
       closedSeries: false,
       caseDetails: {
-        baseCase: 'Mogul raises $55M over 5 years and produces 15 movies, each with returns below industry comparables. Average amount of investor churn.',
-        mediumCase: 'Mogul raises $95M over 5 years and produces 20 movies, each with returns below industry comparables. Average amount of investor churn.',
+        bearCase: 'Mogul raises $55M over 5 years and produces 15 movies, each with returns below industry comparables. Average amount of investor churn.',
+        averageCase: 'Mogul raises $95M over 5 years and produces 20 movies, each with returns below industry comparables. Average amount of investor churn.',
         bullCase: 'Mogul raises $170M over 5 years and produces 30 movies, each with average industry returns. Average amount of investor churn.'
       },
       activeCase: undefined
@@ -610,8 +610,8 @@ export default Vue.extend({
     startPreset(option) {
       let investment, mglMinted, commissionMgl, investmentNumeral, daiReturned, sellAmount, dividend;
       switch (option) {
-        case 'Base Case':
-          this.activeCase = this.caseDetails.baseCase
+        case 'Bear Case':
+          this.activeCase = this.caseDetails.bearCase
           // invest 30M
           investment = 30000000 * DAI;
           this.daiInvestment = 30000000;
@@ -640,8 +640,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
-          // sell 3M
-          this.mglSold = 3000000;
+          // sell 5M
+          this.mglSold = 5000000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -674,8 +674,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 16M
-          this.dividendPaid = 16000000;
+          // pay 12M
+          this.dividendPaid = 12000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -690,8 +690,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 9M
-          this.mglSold = 9000000;
+          // sell 9.5M
+          this.mglSold = 9500000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -752,8 +752,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 20M
-          this.dividendPaid = 20000000;
+          // pay 16M
+          this.dividendPaid = 16000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -768,8 +768,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 10M
-          this.mglSold = 10000000;
+          // sell 27.5M
+          this.mglSold = 27500000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -830,7 +830,13 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 25M
+          // pay 15M
+          this.dividendPaid = 15000000;
+          dividend = this.dividendPaid * DAI;
+          this.totalDAI += dividend;
+          this.reserveSupply += dividend * this.dividendRatioDecimal;
+          this.investmentFund += dividend * (1 - this.dividendRatioDecimal);
+
           this.historicalEvents.push(`Paid dividend of $${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}`);
           this.tooltipData.push(`Paid dividend of <strong>$${numeral(this.dividendPaid).format('0,0.[0]a').toUpperCase()}</strong>`);
           this.historicalSellPrices.push(numeral(this.HRSellDAIPerMGL).format('0,0.[00]'));
@@ -844,11 +850,11 @@ export default Vue.extend({
           this.selectPay(1);
           return
 
-        case 'Medium Case':
-          this.activeCase = this.caseDetails.mediumCase
-          // invest 50M
-          investment = 50000000 * DAI;
-          this.daiInvestment = 50000000;
+        case 'Average Case':
+          this.activeCase = this.caseDetails.averageCase
+          // invest 60M
+          investment = 60000000 * DAI;
+          this.daiInvestment = 60000000;
           mglMinted = buyCalc(
             this.totalMGL,
             this.premintedMGL * MGL,
@@ -874,8 +880,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
-          // sell 3.5M
-          this.mglSold = 3500000;
+          // sell 6.9M
+          this.mglSold = 6900000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -908,8 +914,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 20M
-          this.dividendPaid = 20000000;
+          // pay 24M
+          this.dividendPaid = 24000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -924,8 +930,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 12M
-          this.mglSold = 12000000;
+          // sell 14M
+          this.mglSold = 14000000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -986,8 +992,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 28M
-          this.dividendPaid = 28000000;
+          // pay 32M
+          this.dividendPaid = 32000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -1002,8 +1008,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 3M
-          this.mglSold = 3000000;
+          // sell 35M
+          this.mglSold = 35000000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -1064,8 +1070,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 35M
-          this.dividendPaid = 35000000;
+          // pay 20M
+          this.dividendPaid = 20000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -1114,8 +1120,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
           
-          // sell 5M
-          this.mglSold = 5000000;
+          // sell 8.8M
+          this.mglSold = 8800000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -1164,8 +1170,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 17M
-          this.mglSold = 17000000;
+          // sell 16.7M
+          this.mglSold = 16700000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -1226,8 +1232,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 50M
-          this.dividendPaid = 50000000;
+          // pay 52M
+          this.dividendPaid = 52000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
@@ -1242,8 +1248,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // sell 3M
-          this.mglSold = 3000000;
+          // sell 44.25M
+          this.mglSold = 44250000;
           sellAmount = this.mglSold * MGL;
           if (!this.isOrganisationClosed) {
               daiReturned = sellCalc(
@@ -1304,8 +1310,8 @@ export default Vue.extend({
           this.totalMGLEvents.push(`${this.HRTotalMGL}`);
           this.reserveSupplyEvents.push(`$${this.HRReserveSupply}`);
 
-          // pay 75M
-          this.dividendPaid = 75000000;
+          // pay 30M
+          this.dividendPaid = 30000000;
           dividend = this.dividendPaid * DAI;
           this.totalDAI += dividend;
           this.reserveSupply += dividend * this.dividendRatioDecimal;
